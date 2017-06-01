@@ -39,6 +39,27 @@ local Default				= {
 		latencyFontShadowOffsetY = -1,
 		latencyOutline	= "None",
 	},
+	TargetBar			= {
+		width 			= 320,
+		height			= 31,
+		hideIcon		= false,
+		edgeFile		= "None",
+		texture			= "Striped",
+		timeSize		= 19,
+		timeFont		= "Visitor1",
+		timeFontMonochrome = true,
+		timeFontShadow = true,
+		timeFontShadowOffsetX = 1,
+		timeFontShadowOffsetY = -1,
+		timeOutline	= "None",
+		spellSize		= 13,
+		spellFont		= "Visitor2",
+		spellFontMonochrome = true,
+		spellFontShadow = true,
+		spellFontShadowOffsetX = 1,
+		spellFontShadowOffsetY = -1,
+		spellOutline	= "None",
+	},	
 	MirrorBar			= {
 		width 			= 320,
 		height			= 24,
@@ -184,6 +205,7 @@ function oCB:ShowTest()
 	oCBIcon="Interface\\AddOns\\oCB\\Icon";
 	self:SpellStart("Drag me", 3.5, true, true)
 	self:SpellDelayed(0.5)
+	self:TargetCastStart("TargetBar", "Drag me")
 	self:MIRROR_TIMER_START("EXHAUSTION", 0, 10, 1, 0, EXHAUSTION_LABEL)
 	self:MIRROR_TIMER_START("BREATH", 0, 10, 1, 0, BREATH_LABEL)
 	if PlayerClass == "HUNTER" then
@@ -197,6 +219,7 @@ end
 
 function oCB:HideTest()
 	self:SpellStop(true)
+	self:TargetCastStop("TargetBar", "Drag me")
 	self:MIRROR_TIMER_STOP("EXHAUSTION")
 	self:MIRROR_TIMER_STOP("BREATH")
 	if PlayerClass == "HUNTER" then
@@ -625,8 +648,209 @@ function oCB:OnInitialize()
 					}
 				}
 			},
+			targetbar = {
+				name = "Target Bar", type = 'group', order = 5,
+				desc = "Target Cast Bar",
+				args = {
+					width = {
+						name = "Width", type = 'range', min = 10, max = 500, step = 1, order = 1,
+						desc = "Set the width of the target cast bar.",
+						get = function() return self.db.profile.TargetBar.width end,
+						set = function(v)
+							self.db.profile.TargetBar.width = v
+							self:Layout("TargetBar", "TargetBar")
+						end
+					},
+					height = {
+						name = "Height", type = 'range', min = 5, max = 50, step = 1, order = 2,
+						desc = "Set the height of the target cast bar.",
+						get = function() return self.db.profile.TargetBar.height end,
+						set = function(v)
+							self.db.profile.TargetBar.height = v
+							self:Layout("TargetBar", "TargetBar")
+						end
+					},
+					border = {
+						name = "Border", type = 'text', order = 3,
+						desc = "Toggle the border.",
+						get = function() return self.db.profile.TargetBar.edgeFile end,
+						set = function(v)
+							self.db.profile.TargetBar.edgeFile = v
+							self:Layout("TargetBar", "TargetBar")
+						end,
+						validate = {"Default","None"}
+					},
+					texture = {
+						name = "Texture", type = 'text', order = 4,
+						desc = "Toggle the texture.",
+						get = function() return self.db.profile.TargetBar.texture end,
+						set = function(v)
+							self.db.profile.TargetBar.texture = v
+							self:Layout("TargetBar", "TargetBar")
+						end,
+						validate = {"Aluminium", "Armory", "BantoBar", "Bars", "Blizzard", "Bumps", "Button", "Charcoal", "Cilo", "Cloud", "Comet", "Dabs", "DarkBottom", "Diagonal", "Empty", "Falumn", "Fifths", "Flat", "Fourths", "Frost", "Glamour", "Glamour2", "Glamour3", "Glamour4", "Glamour5", "Glamour6", "Glamour7", "Glass", "Glaze", "Glaze2", "Gloss", "Graphite", "Grid", "Hatched", "Healbot", "LiteStep", "LiteStepLite", "Lyfe", "Melli", "MelliDark", "MelliDarkRough", "Minimalist", "Default", "Otravi", "Outline", "Perl", "Perl2", "Pill", "Rain", "Rocks", "Round", "Ruben", "Runes", "Skewed", "Smooth", "Smoothv2", "Smudge", "Steel", "Striped", "Tube", "Water", "Wglass", "Wisps", "Xeon"}
+					},
+					hideicon = {
+						name = "Hide Icon", type = 'toggle', order = 5,
+						desc = "Show/Hide the icon.",
+						get = function() return self.db.profile.TargetBar.hideIcon end,
+						set = function()
+							self.db.profile.TargetBar.hideIcon = not self.db.profile.TargetBar.hideIcon
+							self:Layout("TargetBar", "TargetBar")
+						end
+					},
+					font = {
+						name = "Font", type = 'group',
+						desc = "Set the font size of different elements.",
+						args = {
+							spell = {
+								name = "Spell", type = 'group',
+								desc = "Spell font settings",
+								args = {
+									size = {
+										name = "Size", type = 'range', min = 6, max = 32, step = 1,
+										desc = "Set the font size on the spellname.",
+										get = function() return self.db.profile.TargetBar.spellSize end,
+										set = function(v)
+											self.db.profile.TargetBar.spellSize = v
+											self:Layout("TargetBar", "TargetBar")
+										end
+									},
+									font = {
+										name = "Font", type = 'text',
+										desc = "Choose the font.",
+										get = function() return self.db.profile.TargetBar.spellFont end,
+										set = function(v)
+											self.db.profile.TargetBar.spellFont = v
+											self:Layout("TargetBar", "TargetBar")
+										end,
+										validate = {"Adventure", "Backsplatter", "Bazooka", "BlackCastleMF", "Budhand", "Comic", "Cooline", "Creeper", "Defused", "Exocet", "FuturaBold", "Mailrays", "Pepsi", "Porky", "Signature", "Visitor1", "Visitor2", "Yellowjacket", "Friz Quadrata", "Arial Narrow", "Skurri", "Morpheus"}
+									},
+									outline = {
+										name = "Outline", type = 'text',
+										desc = "Choose the Outline.",
+										get = function() return self.db.profile.TargetBar.spellOutline end,
+										set = function(v)
+											self.db.profile.TargetBar.spellOutline = v
+											self:Layout("TargetBar", "TargetBar")
+										end,
+										validate = {"Normal", "Thick", "None"}
+									},
+									shadow = {
+										name = "Shadow", type = 'toggle',
+										desc = "Toggle shadow.",
+										get = function() return self.db.profile.TargetBar.spellFontShadow end,
+										set = function() self.db.profile.TargetBar.spellFontShadow = not self.db.profile.TargetBar.spellFontShadow self:Layout("TargetBar", "TargetBar") end
+									},
+									shadowoffset = {
+										name = "Shadow Offset", type = 'group', hidden = function() return not self.db.profile.TargetBar.spellFontShadow end,
+										desc = "Shadow offset settings",
+										args = {
+											x = {
+												name = "Offset X", type = 'range', min = -10, max = 10, step = 1,
+												desc = "Set the font shadow offset.",
+												get = function() return self.db.profile.TargetBar.spellFontShadowOffsetX end,
+												set = function(v)
+													self.db.profile.TargetBar.spellFontShadowOffsetX = v
+													self:Layout("TargetBar", "TargetBar")
+												end
+											},
+											y = {
+												name = "Offset Y", type = 'range', min = -10, max = 10, step = 1,
+												desc = "Set the font shadow offset.",
+												get = function() return self.db.profile.TargetBar.spellFontShadowOffsetY end,
+												set = function(v)
+													self.db.profile.TargetBar.spellFontShadowOffsetY = v
+													self:Layout("TargetBar", "TargetBar")
+												end
+											},
+										}
+									},
+									monochrome = {
+										name = "Monochrome", type = 'toggle',
+										desc = "Toggle monochrome.",
+										get = function() return self.db.profile.TargetBar.spellFontMonochrome end,
+										set = function() self.db.profile.TargetBar.spellFontMonochrome = not self.db.profile.TargetBar.spellFontMonochrome self:Layout("TargetBar", "TargetBar") end
+									},
+								}
+							},
+							time = {
+								name = "Time", type = 'group',
+								desc = "Spell time settings",
+								args = {
+									size = {
+										name = "Size", type = 'range', min = 6, max = 32, step = 1,
+										desc = "Set the font size on the spell time.",
+										get = function() return self.db.profile.TargetBar.timeSize end,
+										set = function(v)
+											self.db.profile.TargetBar.timeSize = v
+											self:Layout("TargetBar", "TargetBar")
+										end
+									},
+									font = {
+										name = "Font", type = 'text',
+										desc = "Choose the font.",
+										get = function() return self.db.profile.TargetBar.timeFont end,
+										set = function(v)
+											self.db.profile.TargetBar.timeFont = v
+											self:Layout("TargetBar", "TargetBar")
+										end,
+										validate = {"Adventure", "Backsplatter", "Bazooka", "BlackCastleMF", "Budhand", "Comic", "Cooline", "Creeper", "Defused", "Exocet", "FuturaBold", "Mailrays", "Pepsi", "Porky", "Signature", "Visitor1", "Visitor2", "Yellowjacket", "Friz Quadrata", "Arial Narrow", "Skurri", "Morpheus"}
+									},
+									outline = {
+										name = "Outline", type = 'text',
+										desc = "Choose the Outline.",
+										get = function() return self.db.profile.TargetBar.timeOutline end,
+										set = function(v)
+											self.db.profile.TargetBar.timeOutline = v
+											self:Layout("TargetBar", "TargetBar")
+										end,
+										validate = {"Normal", "Thick", "None"}
+									},
+									shadow = {
+										name = "Shadow", type = 'toggle',
+										desc = "Toggle shadow.",
+										get = function() return self.db.profile.TargetBar.timeFontShadow end,
+										set = function() self.db.profile.TargetBar.timeFontShadow = not self.db.profile.TargetBar.timeFontShadow self:Layout("TargetBar", "TargetBar") end
+									},
+									shadowoffset = {
+										name = "Shadow Offset", type = 'group', hidden = function() return not self.db.profile.TargetBar.timeFontShadow end,
+										desc = "Shadow offset settings",
+										args = {
+											x = {
+												name = "Offset X", type = 'range', min = -10, max = 10, step = 1,
+												desc = "Set the font shadow offset.",
+												get = function() return self.db.profile.TargetBar.timeFontShadowOffsetX end,
+												set = function(v)
+													self.db.profile.TargetBar.timeFontShadowOffsetX = v
+													self:Layout("TargetBar", "TargetBar")
+												end
+											},
+											y = {
+												name = "Offset Y", type = 'range', min = -10, max = 10, step = 1,
+												desc = "Set the font shadow offset.",
+												get = function() return self.db.profile.TargetBar.timeFontShadowOffsetY end,
+												set = function(v)
+													self.db.profile.TargetBar.timeFontShadowOffsetY = v
+													self:Layout("TargetBar", "TargetBar")
+												end
+											},
+										}
+									},
+									monochrome = {
+										name = "Monochrome", type = 'toggle',
+										desc = "Toggle monochrome.",
+										get = function() return self.db.profile.TargetBar.timeFontMonochrome end,
+										set = function() self.db.profile.TargetBar.timeFontMonochrome = not self.db.profile.TargetBar.timeFontMonochrome self:Layout("TargetBar", "TargetBar") end
+									},
+								}				
+							}
+						}
+					}
+				}
+			},			
 			mirrorbar = {
-				name = "Mirror Bar", type = 'group', order = 4,
+				name = "Mirror Bar", type = 'group', order = 5,
 				desc = "Mirror Bar",
 				args = {
 					width = {
@@ -857,7 +1081,7 @@ function oCB:OnInitialize()
 				}
 			},
 			colors = {
-				name = "Colors", type = 'group', order = 5,
+				name = "Colors", type = 'group', order = 6,
 				desc = "Set the bar colors.",
 				args = {
 					spell = {
@@ -923,6 +1147,7 @@ end
 function oCB:Reset()
 	self:ResetDB("profile")
 	self:Layout("CastingBar")
+	self:Layout("TargetBar", "TargetBar")
 	self:Layout("BREATH", "MirrorBar")
 	self:Layout("EXHAUSTION", "MirrorBar")
 	self:Layout("FEIGNDEATH", "MirrorBar")
@@ -935,6 +1160,7 @@ function oCB:OnEnable()
 	self:HideBlizzCB()
 	
 	self:CreateFramework("CastingBar", "oCBFrame")
+	self:CreateFramework("TargetBar", "oCBTargetFrame", "TargetBar")
 	self:CreateFramework("BREATH", "oCBMirror1", "MirrorBar")
 	self:CreateFramework("EXHAUSTION","oCBMirror2", "MirrorBar")
 	self:CreateFramework("FEIGNDEATH","oCBMirror3", "MirrorBar")
@@ -949,6 +1175,25 @@ function oCB:Events()
 	self:RegisterEvent("MIRROR_TIMER_START")
 	self:RegisterEvent("MIRROR_TIMER_PAUSE")
 	self:RegisterEvent("MIRROR_TIMER_STOP")
+
+  self:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_FRIENDLYPLAYER_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_FRIENDLYPLAYER_BUFF", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PARTY_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PARTY_BUFF", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("PLAYER_TARGET_CHANGED", "TargetChanged")	
 	
 	UIParent:UnregisterEvent("MIRROR_TIMER_START")
 end
@@ -1096,4 +1341,20 @@ function oCB:FindItemIcon(item)
 		end
 	end
 	return texture;
+end
+
+function oCB:fmtTime(seconds)
+	local timestring = ""
+	if not tonumber(seconds) then return timestring end
+  local d, h, m, s = ChatFrame_TimeBreakDown(seconds)
+  if d > 0 then
+    timestring =  string.format( "%02dd:%02dh:%02dm:%.1f", d,h,m,s)
+  elseif h > 0 then
+    timestring = string.format( "%02dh:%02dm:%.1f", h,m,s)
+  elseif m > 0 then
+    timestring = string.format( "%02dm:%.1f", m,s)
+  elseif s > 0 then
+    timestring = string.format( "%.1f", s)
+  end
+  return timestring
 end

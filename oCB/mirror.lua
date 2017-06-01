@@ -7,7 +7,7 @@ function oCB:MIRROR_TIMER_START(type, value, maxValue, scale, pause, text)
 	oCB.frames[type].value = (value / 1000)
 	oCB.frames[type].scale = scale
 	
-	if ( pause > 0 ) then CB.frames[type].pause = 1
+	if ( pause > 0 ) then oCB.frames[type].pause = 1
 	else oCB.frames[type].pause = nil end
 	
 	if text == BREATH_LABEL then
@@ -57,14 +57,14 @@ function oCB:OnMirror()
 	this.Bar:SetValue(this.value)
 	
 	local w, _, max = this.Bar:GetWidth(), this.Bar:GetMinMaxValues()
-	sp = ( this.value / max ) * w
+	local sp = ( this.value / max ) * w
 	
 	if( sp < 0 ) then sp = 0 end
 	if(sp > w) then
 		this.Time:Hide()
 		this.Spark:Hide()
 	else
-		this.Time:SetText(string.format( "%.1f", math.max(this.value)))
+			this.Time:SetText(oCB:fmtTime( math.max(this.value)))
 		this.Spark:SetPoint("CENTER", this.Bar, "LEFT", sp, 0)
 	end
 end

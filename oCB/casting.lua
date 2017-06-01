@@ -311,7 +311,7 @@ function oCB:OnCasting()
 		
 		if (n >= oCB.maxValue) then n = oCB.maxValue end
 		
-		oCB.frames.CastingBar.Time:SetText(string.format( "%.1f", n-oCB.startTime).." / "..string.format("%.1f", oCB.maxValue-oCB.startTime))
+		oCB.frames.CastingBar.Time:SetText(oCB:fmtTime(n-oCB.startTime).." / "..oCB:fmtTime(oCB.maxValue-oCB.startTime))
 		
 		if (oCB.delay ~= 0) then delay = 1 end
 		if (delay) then
@@ -322,6 +322,7 @@ function oCB:OnCasting()
 		
 		if UnitOnTaxi("player") then
 			oCB.frames.CastingBar.Texture:SetTexture("Interface/Icons/Ability_Hunter_EagleEye")
+			oCB.frames.CastingBar.Icon:Show()
 			oCB.frames.CastingBar.Latency:SetText("")
 			oCB.frames.CastingBar.LagBar:SetValue(0)
 		end
@@ -345,7 +346,7 @@ function oCB:OnCasting()
 
 		local b = oCB.startTime + (oCB.endTime - n)
 		
-		oCB.frames.CastingBar.Time:SetText(string.format( "%.1f", math.max(oCB.maxValue - n, 0.0)))
+		oCB.frames.CastingBar.Time:SetText(oCB:fmtTime(math.max(oCB.maxValue - n, 0.0)))
 		
 		if (oCB.delay and oCB.delay ~= 0) then delay = 1 end
 		if (delay) then
