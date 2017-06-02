@@ -86,6 +86,9 @@ local Default				= {
 		Casting			= {r=.4784313725490196, g=.4666666666666667, b=.4901960784313725},
 		Channel			= {r=.3, g=.3, b=1},
 		Failed			= {r=1, g=0, b=0},
+		TargetCasting		= {r=1, g=204/255, b=0},
+		TargetComplete 		= {r=1, g=77/255, b=0}, -- cast finished ("success" for friendlies, "fail" for enemies)
+		TargetStopped		= {r=0, g=204/255, b=102/255}, -- cast interrupted ("fail" for friendlies, "success" for enemies)
 	},
 	Mirror				= {
 		EXHAUSTION 		= {r=1, g=.9, b=0},
@@ -205,7 +208,7 @@ function oCB:ShowTest()
 	oCBIcon="Interface\\AddOns\\oCB\\Icon";
 	self:SpellStart("Drag me", 3.5, true, true)
 	self:SpellDelayed(0.5)
-	self:TargetCastStart("TargetBar", "Drag me")
+	self:TargetCastStart("TargetBar", "Drag me (target)")
 	self:MIRROR_TIMER_START("EXHAUSTION", 0, 10, 1, 0, EXHAUSTION_LABEL)
 	self:MIRROR_TIMER_START("BREATH", 0, 10, 1, 0, BREATH_LABEL)
 	if PlayerClass == "HUNTER" then
@@ -219,7 +222,7 @@ end
 
 function oCB:HideTest()
 	self:SpellStop(true)
-	self:TargetCastStop("TargetBar", "Drag me")
+	self:TargetCastStop("TargetBar", "Drag me (target)")
 	self:MIRROR_TIMER_STOP("EXHAUSTION")
 	self:MIRROR_TIMER_STOP("BREATH")
 	if PlayerClass == "HUNTER" then
@@ -1119,7 +1122,34 @@ function oCB:OnInitialize()
 							return v.r,v.g,v.b
 						end,
 						set = function(r,g,b) self.db.profile.Colors.Failed = {r=r,g=g,b=b} end
-					}
+					},
+					targetspell = {
+						name = "Target Casting", type = 'color',
+						desc = "Sets the color of the target cast bar.",
+						get = function()
+							local v = self.db.profile.Colors.TargetCasting
+							return v.r,v.g,v.b
+						end,
+						set = function(r,g,b) self.db.profile.Colors.TargetCasting = {r=r,g=g,b=b} end
+					},
+					targetfailed = {
+						name = "Target Interrupted", type = 'color',
+						desc = "Sets the color of interrupted target casts.",
+						get = function()
+							local v = self.db.profile.Colors.TargetStopped
+							return v.r,v.g,v.b
+						end,
+						set = function(r,g,b) self.db.profile.Colors.TargetStopped = {r=r,g=g,b=b} end
+					},
+					targetsuccess = {
+						name = "Target Complete", type = 'color',
+						desc = "Sets the color of completed target casts.",
+						get = function()
+							local v = self.db.profile.Colors.TargetComplete
+							return v.r,v.g,v.b
+						end,
+						set = function(r,g,b) self.db.profile.Colors.TargetComplete = {r=r,g=g,b=b} end
+					},
 				}
 			}
 		}

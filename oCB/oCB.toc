@@ -1,9 +1,9 @@
 ﻿## Interface: 11200
 ## Title: oCB3 |cff7fff7f -Ace2-|r
 ## Author: Haste, Athene, Laytya, Roadblock
-## Notes: A player and target cast bar.
-## Notes-frFR: Remplacement de la barre de cast.
-## Version: 3.5.0
+## Notes: A player castbar replacement and target cast bar.
+## Notes-frFR: Remplacement de la barre de cast et barre de cast de cible.
+## Version: 3.5.1
 ## DefaultState: Enabled
 ## OptionalDeps: Ace2, DewdropLib
 ## LoadOnDemand: 0

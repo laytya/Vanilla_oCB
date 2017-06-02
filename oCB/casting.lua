@@ -126,7 +126,7 @@ function oCB:SpellStart(s, d, dIsInSeconds, dontRegister)
 	self.holdTime 	= 0
 	self.delay 		= 0
 	self.casting 	= 1
-	self.fadeOut 	= nil
+	self.fadeOut 	= nil  -- spellstart
 	self.SpellIcon 	= nil
 	self.ItemIcon 	= nil
 	
@@ -151,7 +151,7 @@ function oCB:SpellStop(dontUnregister)
 	
 	self.delay 		= 0
 	self.casting 	= nil
-	self.fadeOut 	= 1
+	self.fadeOut 	= 1 -- spellstop
 	
 	oCBCastSent = nil
 	
@@ -183,7 +183,7 @@ function oCB:SpellFailed(dontUnregister)
 	
 	self.casting 		= nil
 	self.channeling 	= nil
-	self.fadeOut	= 1
+	self.fadeOut	= 1 -- spellfailed
 	self.holdTime = GetTime() + 1
 	
 	oCBCastSent = nil
@@ -261,7 +261,7 @@ function oCB:SpellChannelStart(d)
 	self.holdTime 	= 0
 	self.casting		= nil
 	self.channeling 	= 1
-	self.fadeOut 	= nil
+	self.fadeOut 	= nil  -- ChannelStart
 	
 	self.frames.CastingBar:Show()
 	self.frames.CastingBar.Spark:Show()
@@ -279,7 +279,7 @@ function oCB:SpellChannelStop()
 	self.delay = 0
 	self.casting = nil
 	self.channeling = nil
-	self.fadeOut = 1
+	self.fadeOut = 1 -- channelstop
 	
 	oCBCastSent = nil
 	
@@ -340,7 +340,7 @@ function oCB:OnCasting()
 		if (n > oCB.endTime) then n = oCB.endTime end
 		if (n == oCB.endTime) then
 			oCB.channeling = nil
-			oCB.fadeOut = 1
+			oCB.fadeOut = 1 --onupdate complete
 			return
 		end
 
@@ -365,11 +365,10 @@ function oCB:OnCasting()
 		return
 	elseif(oCB.fadeOut) then
 		local a = this:GetAlpha() - .05
-		
 		if (a > 0) then
 			oCB.frames.CastingBar:SetAlpha(a)
 		else
-			oCB.fadeOut = nil
+			oCB.fadeOut = nil  -- OnUpdate
 			oCB.frames.CastingBar:Hide()
 			oCB.frames.CastingBar.Time:SetText("")
 			oCB.frames.CastingBar.Delay:SetText("")

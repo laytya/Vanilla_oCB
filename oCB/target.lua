@@ -83,6 +83,7 @@ local Targets = {
   ["Eldreth Darter"] = {p="Mana Burn", t=2000, ico="Spell_Shadow_ManaBurn", m="silence"};
   ["Emperor Vek\'lor"] = {p="Shadow Bolt", t=1000, ico="Spell_Shadow_ShadowBolt", m="silence"};
   ["Fardel Dabyrie"] = {p="Deadly Poison", t=2000, ico="Spell_Nature_NullifyPoison", m="silence"};
+  ["Firebrand Dreadweaver"] = {p="Plague Cloud", t=2500, ico="Spell_Shadow_CallofBone", m="silence"};
   ["Firemaw"] = {p="Shadow Flame", t=2000, ico="Spell_Fire_Incinerate", m="silence"};
   ["Flame Buffet Totem"] = {p="Flame Buffet", t=1500, ico="Spell_Fire_Fireball", m="silence"};
   ["Flamegor"] = {p="Shadow Flame", t=2000, ico="Spell_Fire_Incinerate", m="silence"};
@@ -129,6 +130,7 @@ local Targets = {
   ["Red Wyrmkin"] = {p="Flamestrike", t=2500, ico="Spell_Fire_SelfDestruct", m="silence"};
   ["Rogue Black Drake"] = {p="Flame Breath", t=1700, ico="Spell_Fire_Fire", m="silence"};
   ["Scarlet High Clerist"] = {p="Holy Fire", t=5000, ico="Spell_Holy_SearingLight", m="silence"};
+  ["Scarlet Magus"] = {p="Fireball Volley", t=3000, ico="Spell_Fire_FlameBolt", m="silence"};
   ["Scarshield Spellbinder"] = {p="Mana Burn", t=2000, ico="Spell_Shadow_ManaBurn", m="silence"};
   ["Scorched Guardian"] = {p="Flame Breath", t=1700, ico="Spell_Fire_Fire", m="silence"};
   ["Shazzrah"] = {p="Arcane Explosion", t=500, ico="Spell_Nature_WispSplode", m="silence"};
@@ -140,6 +142,7 @@ local Targets = {
   ["Syndicate Conjuror"] = {p="Sleep", t=1000, ico="Spell_Nature_Sleep", m="silence"};
   ["The Prophet Skeram"] = {p="Arcane Explosion", t=1000, ico="Spell_Nature_WispSplode", m="silence"};
   ["The Windreaver"] = {p="Chain Lightning", t=2000, ico="Spell_Nature_ChainLightning", m="silence"};
+  ["Twilight Fire Guard"] = {p="Fireball Volley", t=3000, ico="Spell_Fire_FlameBolt", m="silence"};
   ["Tyranis Malem"] = {p="Wrath", t=2000, ico="Spell_Nature_Lightning", m="silence"};
   ["Unholy Staff"] = {p="Arcane Explosion", t=500, ico="Spell_Nature_WispSplode", m="silence"};
   ["Unrelenting Rider"] = {p="Shadow Bolt Volley", t=1500, ico="Spell_Shadow_ShadowBolt", m="silence"};
@@ -152,7 +155,7 @@ local Targets = {
   ["Young Wendigo"] = {p="Frost Breath", t=250, ico="Spell_Frost_FrostNova", m="silence"};
 }
 local Spells = {
-  ["Drag me"] = {t=3500, ico="Temp", s=0, m="silence"};
+  ["Drag me (target)"] = {t=3500, ico="Temp", s=0, m="silence"};
   ['[PH] Teleport to Auberdine'] = {t=2000, ico="Temp", m="silence"};
   ['[PH] Teleport to Balthule'] = {t=2000, ico="Temp", m="silence"};
   ['[PH] Teleport to Booty Bay'] = {t=2000, ico="Temp", m="silence"};
@@ -280,6 +283,7 @@ local Spells = {
   ['Fire Shield III'] = {t=1000, ico="Spell_Fire_Immolation", m="silence"};
   ['Fire Shield IV'] = {t=1000, ico="Spell_Fire_Immolation", m="silence"};
   ['Fire Storm'] = {t=2000, ico="Spell_Fire_SelfDestruct", m="silence"};
+  ['Fireball'] = {t=3000, ico="Spell_Fire_FlameBolt", m="silence"};
   ['Fireball Volley'] = {t=2000, ico="Spell_Fire_FlameBolt", m="silence"};
   ['Firebolt'] = {t=3000, ico="Spell_Fire_FireBolt02", m="silence"};
   ['Firebolt II'] = {t=3000, ico="Spell_Fire_FireBolt02", m="silence"};
@@ -296,6 +300,7 @@ local Spells = {
   ['Flame Spray'] = {t=1700, ico="Spell_Fire_Fire", m="silence"};
   ['Flamecrack'] = {t=2500, ico="Spell_Fire_Fire", m="silence"};
   ['Flamespit'] = {t=3000, ico="Spell_Fire_FlameBolt", m="silence"};
+  ['Flamestrike'] = {t=3000, ico="Spell_Fire_SelfDestruct", m="silence"};
   ['Flash of Light'] = {t=1500, ico="Spell_Holy_Heal", m="silence"};
   ['Force Punch'] = {t=1000, ico="INV_Gauntlets_31", m="pacify"};
   ['Freeze'] = {t=3500, ico="Spell_Frost_Glacier", m="silence"};
@@ -349,6 +354,7 @@ local Spells = {
   ['Lethal Toxin'] = {t=3000, ico="Spell_Nature_CorrosiveBreath", m="silence"};
   ['Life Steal'] = {t=1500, ico="Spell_Shadow_LifeDrain02", m="silence"};
   ['Lightning Blast'] = {t=3200, ico="Spell_Nature_Lightning", m="silence"};
+  ['Lightning Bolt'] = {t=3000, ico="Spell_Nature_Lightning", m="silence"};
   ['Lightning Breath'] = {t=2000, ico="Spell_Nature_Lightning", m="silence"};
   ['Lightning Cloud'] = {t=3000, ico="Spell_Nature_CallStorm", m="silence"};
   ['Lizard Bolt'] = {t=2000, ico="Spell_Nature_Lightning", m="silence"};
@@ -356,6 +362,7 @@ local Spells = {
   ['Longshot III'] = {t=4000, ico="Ability_Marksmanship", m="pacify"};
   ['Machine Gun'] = {t=500, ico="Ability_Marksmanship", m="pacify"};
   ['Magma Blast'] = {t=1000, ico="Spell_Fire_FlameShock", m="silence"};
+  ['Mana Burn'] = {t=3000, ico="Spell_Shadow_ManaBurn", m="silence"};
   ['Manastorm'] = {t=2000, ico="Spell_Frost_IceStorm", m="silence"};
   ['Mark of Flames'] = {t=1000, ico="Spell_Fire_Fireball", m="silence"};
   ['Marksman Hit'] = {t=2000, ico="Ability_Marksmanship", m="pacify"};
@@ -372,7 +379,7 @@ local Spells = {
   ['Parasite'] = {t=2000, ico="Ability_Poisons", m="pacify"};
   ['Pickpocket (PT)'] = {t=5000, ico="Temp", m="pacify"};
   ['Piercing Shadow'] = {t=2000, ico="Spell_Shadow_ChillTouch", m="silence"};
-  ['Plague Cloud'] = {t=2500, ico="Spell_Shadow_CallofBone", m="silence"};
+  ['Plague Cloud'] = {t=2000, ico="Spell_Shadow_CallofBone", m="silence"};
   ['Plague Mind'] = {t=4000, ico="Spell_Shadow_CallofBone", m="silence"};
   ['Pointy Spike'] = {t=500, ico="Ability_ImpalingBolt", m="pacify"};
   ['Poison Bolt'] = {t=2500, ico="Spell_Nature_CorrosiveBreath", m="silence"};
@@ -410,6 +417,7 @@ local Spells = {
   ['Scry on Azrethoc'] = {t=1000, ico="INV_Misc_Orb_03", m="silence"};
   ['Searing Flames'] = {t=2000, ico="Spell_Fire_Immolation", m="silence"};
   ['Shackle Undead'] = {t=2000, ico="Spell_Nature_Slow", m="silence"};
+  ['Shadow Bolt'] = {t=3000, ico="Spell_Shadow_ShadowBolt", m="silence"};
   ['Shadow Bolt Misfire'] = {t=2000, ico="Spell_Shadow_ShadowBolt", m="silence"};
   ['Shadow Bolt Volley'] = {t=3000, ico="Spell_Shadow_ShadowBolt", m="silence"};
   ['Shadow Flame'] = {t=250, ico="Spell_Fire_Fire", m="pacify"};
@@ -638,7 +646,7 @@ function oCB:OnTargetCasting()
   if (uname and Casters[uname]) or test then
     local spellname,starttime,casttime
     if (test) then
-      spellname = "Drag me"
+      spellname = "Drag me (target)"
       starttime = Casters["TargetBar"].starttime or 0
       casttime = Casters["TargetBar"].casttime or 0
     else
@@ -663,13 +671,24 @@ function oCB:OnTargetCasting()
     else
       if not test then
         Casters[uname] = nil
-        oCB.frames.TargetBar:Hide()
+        oCB.targetFadeOut = 1
       end
-      local c = oCB.db.profile.Colors.Failed
+      local c = oCB.db.profile.Colors.TargetComplete
       oCB.frames.TargetBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
     end
   else
-    oCB.frames.TargetBar:Hide()
+    oCB.targetFadeOut = 1
+  end
+  if (oCB.targetFadeOut) then
+    local a = this:GetAlpha() - .05
+    if (a > 0) then
+      oCB.frames.TargetBar:SetAlpha(a)
+    else
+      oCB.targetFadeOut = nil  -- OnUpdate
+      oCB.frames.TargetBar:Hide()
+      oCB.frames.TargetBar.Time:SetText("")
+      oCB.frames.TargetBar:SetAlpha(1)
+    end
   end
 end
 
@@ -679,6 +698,7 @@ function oCB:TargetChanged()
     local starttime = Casters[uname].starttime or 0
     local casttime = Casters[uname].casttime or 0
     if starttime + casttime > GetTime() then
+      self.frames.TargetBar:SetAlpha(1)
       self.frames.TargetBar:Show()
     end  
   end
@@ -733,9 +753,10 @@ function oCB:TargetCastStart(target,spell)
   local uname = UnitExists("target") and UnitName("target") or false
   local casttime, icon
   local test = not self.db.profile.lock
-  local c = self.db.profile.Colors.Casting
+  local c = self.db.profile.Colors.TargetCasting
   local now = GetTime()
-  if (uname) then
+  self.targetFadeOut = nil -- caststart
+  if (uname) and not test then
     local isPlayer = UnitIsPlayer("target")
     if Targets[uname] ~= nil then 
       if Targets[uname].p ~= nil and Targets[uname].p == spell then
@@ -763,6 +784,7 @@ function oCB:TargetCastStart(target,spell)
   end
   if Casters[uname] or test then 
     self.frames.TargetBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
+    self.frames.TargetBar:SetAlpha(1)
     self.frames.TargetBar:Show()
     if not self.db.profile.TargetBar.hideIcon then
       self.frames.TargetBar.Texture:SetTexture(icon)
@@ -772,9 +794,10 @@ function oCB:TargetCastStart(target,spell)
 end
 
 function oCB:TargetCastStop(target,spell)
-  local c = self.db.profile.Colors.Complete
-  self.frames.TargetBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
   if Casters[target] and Interrupts[spell] ~= nil then
+    local c = self.db.profile.Colors.TargetStopped
+    self.frames.TargetBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
+    self.targetFadeOut = 1    
     Casters[target] = nil
   end  
 end
