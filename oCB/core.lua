@@ -81,13 +81,13 @@ local Default				= {
 		spellFontShadowOffsetY = -1,
 		spellOutline	= "None",
 	},
-	Colors				= {
-		Complete		= {r=.8431372549019608, g=.8352941176470589, b=.8901960784313725},
-		Casting			= {r=.4784313725490196, g=.4666666666666667, b=.4901960784313725},
-		Channel			= {r=.3, g=.3, b=1},
-		Failed			= {r=1, g=0, b=0},
+	Colors						= {
+		Complete				= {r=.8431372549019608, g=.8352941176470589, b=.8901960784313725},
+		Casting					= {r=.4784313725490196, g=.4666666666666667, b=.4901960784313725},
+		Channel					= {r=.3, g=.3, b=1},
+		Failed					= {r=1, g=0, b=0},
 		TargetCasting		= {r=1, g=204/255, b=0},
-		TargetComplete 		= {r=1, g=77/255, b=0}, -- cast finished ("success" for friendlies, "fail" for enemies)
+		TargetComplete 	= {r=1, g=77/255, b=0}, -- cast finished ("success" for friendlies, "fail" for enemies)
 		TargetStopped		= {r=0, g=204/255, b=102/255}, -- cast interrupted ("fail" for friendlies, "success" for enemies)
 	},
 	Mirror				= {
@@ -1223,6 +1223,7 @@ function oCB:Events()
   self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE", "TargetCombatlog")
   self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS", "TargetCombatlog")
   self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_BUFF", "TargetCombatlog")
   self:RegisterEvent("PLAYER_TARGET_CHANGED", "TargetChanged")	
 	
 	UIParent:UnregisterEvent("MIRROR_TIMER_START")
