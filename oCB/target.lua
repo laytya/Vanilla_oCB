@@ -13,6 +13,9 @@ local Interrupts = {
   ["Cheap Shot"] = true;
   ["Gouge"] = true;
   ["Kidney Shot"] = true;
+  ["Silence"] = true;
+  ["Counterspell"] = true;
+  ["Counterspell - Silenced"] = true;
   ["Bash"] = true;
   ["Fear"] = true;
   ["Howl of Terror"] = true;
@@ -636,6 +639,8 @@ local Patterns = {
   ["SPELL_CRIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGCRITSELFOTHER,"%d%$",""),"%%d","%%d+"),"%%s","(.+)"),
   ["OTHER_SPELL_HIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGOTHEROTHER,"%d%$",""), "%%s", "(.+)"), "%%d", "%%d+"),
   ["OTHER_SPELL_CRIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGOTHEROTHER,"%d%$",""), "%%s", "(.+)"), "%%d", "%%d+"),
+  ["SPELL_INTERRUPT"] = string.gsub(string.gsub(SPELLINTERRUPTSELFOTHER, "%d%$",""),"%%s","(.+)"),
+  ["OTHER_SPELL_INTERRUPT"] = string.gsub(string.gsub(SPELLINTERRUPTOTHEROTHER,"%d%$",""),"%%s", "(.+)"),
 }
 
 function oCB:OnTargetCasting()
@@ -745,6 +750,15 @@ function oCB:TargetCombatlog(msg)
     for _, spell, target in string.gfind(msg, Patterns.OTHER_SPELL_CRIT) do
       self:TargetCastStop(target, spell)
       return
+    end
+    -- You interrupt (.+)'s (.+).
+    for target,_ in string.gfind(msg, Patterns.SPELL_INTERRUPT) do
+      self:TargetCastStop(target, "Counterspell")
+      return
+    end
+    -- (.+) interrupts (.+)'s (.+).
+    for _, target, _ in string.gfind(msg, Patterns.OTHER_SPELL_INTERRUPT) do
+      self:TargetCastStop(target, "Counterspell")
     end
   end  
 end
