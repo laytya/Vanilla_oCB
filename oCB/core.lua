@@ -87,6 +87,7 @@ local Default				= {
 		Channel					= {r=.3, g=.3, b=1},
 		Failed					= {r=1, g=0, b=0},
 		TargetCasting		= {r=1, g=204/255, b=0},
+		TargetChannel		= {r=0, g=0, b=0},
 		TargetComplete 	= {r=1, g=77/255, b=0}, -- cast finished ("success" for friendlies, "fail" for enemies)
 		TargetStopped		= {r=0, g=204/255, b=102/255}, -- cast interrupted ("fail" for friendlies, "success" for enemies)
 	},
@@ -1132,6 +1133,15 @@ function oCB:OnInitialize()
 						end,
 						set = function(r,g,b) self.db.profile.Colors.TargetCasting = {r=r,g=g,b=b} end
 					},
+					targetchannel = {
+						name = "Target Channel", type = 'color',
+						desc = "Sets the color of the target channel cast bar.",
+						get = function()
+							local v = self.db.profile.Colors.TargetChannel
+							return v.r,v.g,v.b
+						end,
+						set = function(r,g,b) self.db.profile.Colors.TargetChannel = {r=r,g=g,b=b} end
+					},					
 					targetfailed = {
 						name = "Target Interrupted", type = 'color',
 						desc = "Sets the color of interrupted target casts.",

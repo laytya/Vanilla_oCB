@@ -310,6 +310,7 @@ local Spells = {
   ['Freeze Solid'] = {t=2500, ico="Spell_Frost_Glacier", m="silence"};
   ['Frost Breath'] = {t=2000, ico="Spell_Frost_FrostNova", m="silence"};
   ['Frost Burn'] = {t=2000, ico="Spell_Frost_ChillingBlast", m="silence"};
+  ['Frostbolt'] = {t=3000, ico="Spell_Frost_FrostBolt02", m="silence"};
   ['Frostbolt Volley'] = {t=2000, ico="Spell_Frost_FrostBolt02", m="silence"};
   ['Fumble'] = {t=1000, ico="Spell_Shadow_Fumble", m="silence"};
   ['Fumble II'] = {t=1000, ico="Spell_Shadow_Fumble", m="silence"};
@@ -628,6 +629,67 @@ local PlayerSpells = {
   ['Teleport: Thunder Bluff'] = {t=10000, ico="Spell_Arcane_TeleportThunderBluff", m="silence"};
   ['Teleport: Undercity'] = {t=10000, ico="Spell_Arcane_TeleportUnderCity", m="silence"};
   ['Wrath'] = {t=2000, ico="Spell_Nature_AbolishMagic", m="silence"};  
+}
+local TargetChannel ={
+  ["Azshir the Sleepless"] = {p="Soul Siphon", t=12000, ico="Spell_Shadow_LifeDrain02", m="silence"};
+  ["Baron Vardus"] = {p="Blizzard", t=10000, ico="Spell_Frost_IceStorm", m="silence"};
+  ["Doomguard Commander"] = {p="Rain of Fire", t=9000, ico="Spell_Shadow_RainOfFire", m="silence"};
+  ["Doomguard"] = {p="Rain of Fire", t=10000, ico="Spell_Shadow_RainOfFire", m="silence"};
+  ["Firemane Flamecaller"] = {p="Rain of Fire", t=9000, ico="Spell_Shadow_RainOfFire", m="silence"};
+  ["Fizzle Darkstorm"] = {p="Soul Siphon", t=10000, ico="Spell_Shadow_LifeDrain02", m="silence"};
+  ["Herod"] = {p="Whirlwind", t=10000, ico="Ability_Whirlwind", m="pacify"};
+  ["High Priestess Jeklik"] = {p="Mind Flay", t=10000, ico="Spell_Shadow_SiphonMana", m="silence"};
+  ["High Priestess Mar\'li"] = {p="Drain Life", t=7000, ico="Spell_Shadow_LifeDrain02", m="silence"};
+  ["Jadefire Hellcaller"] = {p="Rain of Fire", t=10000, ico="Spell_Shadow_RainOfFire", m="silence"};
+  ["Qiraji Brainwasher"] = {p="Mind Flay", t=8000, ico="Spell_Shadow_SiphonMana", m="silence"};
+  ["Qiraji Mindslayer"] = {p="Mind Flay", t=8000, ico="Spell_Shadow_SiphonMana", m="silence"};
+  ["Ravenclaw Servant"] = {p="Soul Siphon", t=10000, ico="Spell_Shadow_LifeDrain02", m="silence"};
+  ["Sandfury Firecaller"] = {p="Rain of Fire", t=9000, ico="Spell_Shadow_RainOfFire", m="silence"};
+  ["Surgical Assistant"] = {p="Mind Flay", t=8000, ico="Spell_Shadow_SiphonMana", m="silence"};
+  ["Twilight Geomancer"] = {p="Rain of Fire", t=9000, ico="Spell_Shadow_RainOfFire", m="silence"};
+  ["Wildspawn Hellcaller"] = {p="Rain of Fire", t=9000, ico="Spell_Shadow_RainOfFire", m="silence"};
+  ["Wyrmkin Firebrand"] = {p="Rain of Fire", t=9000, ico="Spell_Shadow_RainOfFire", m="silence"};
+}
+local PlayerChannel = {
+  --["Arcane Missiles"] = {t=5000, ico="Spell_Nature_StarFall", m="silence"};
+  --["Blizzard"] = {t=8000, ico="Spell_Frost_IceStorm", m="silence"};
+  --["Drain Life"] = {t=5000, ico="Spell_Shadow_LifeDrain02", m="silence"};
+  --["Drain Mana"] = {t=5000, ico="Spell_Shadow_SiphonMana", m="silence"};
+  ["Drain Soul"] = {t=15000, ico="Spell_Shadow_Haunting", m="silence"};
+  ["Eagle Eye"] = {t=60000, ico="Ability_Hunter_EagleEye", m="silence"};
+  ["Evocation"] = {t=8000, ico="Spell_Nature_Purge", m="silence"};
+  ["Health Funnel"] = {t=10000, ico="Spell_Shadow_LifeDrain", m="silence"};
+  ["Hellfire"] = {t=15000, ico="Spell_Fire_Incinerate", m="silence"};
+  ["Hurricane"] = {t=10000, ico="Spell_Nature_Cyclone", m="silence"};
+  ["Mend Pet"] = {t=5000, ico="Ability_Hunter_MendPet", m="silence"};
+  --["Mind Flay"] = {t=3000, ico="Spell_Shadow_SiphonMana", m="silence"};
+  ["Mind Vision"] = {t=60000, ico="Spell_Holy_MindVision", m="silence"};
+  --["Rain of Fire"] = {t=8000, ico="Spell_Shadow_RainOfFire", m="silence"};
+  ["Starfall"] = {t=10000, ico="Spell_Arcane_StarFire", m="silence"};
+  ["Starshards"] = {t=6000, ico="Spell_Arcane_StarFire", m="silence"};
+  ["Tranquility"] = {t=10000, ico="Spell_Nature_Tranquility", m="silence"};
+  ["Volley"] = {t=6000, ico="Ability_Marksmanship", m="pacify"};
+}
+local SpellChannel = {
+  ["Arantir\'s Anger"] = {t=4000, ico="Ability_Whirlwind", m="pacify"};
+  ["Arcane Missiles"] = {t=5000, ico="Spell_Nature_StarFall", m="silence"};
+  ["Baron Rivendare\'s Soul Drain"] = {t=3000, ico="Spell_Shadow_SiphonMana", m="silence"};
+  ["Blizzard"] = {t=8000, ico="Spell_Frost_IceStorm", m="silence"};
+  ["Consume Shadows"] = {t=10000, ico="Spell_Shadow_AntiShadow", m="silence"};
+  ["Consuming Shadows"] = {t=15000, ico="Spell_Shadow_Haunting", m="silence"};
+  ["Drain Life"] = {t=5000, ico="Spell_Shadow_LifeDrain02", m="silence"};
+  ["Drain Mana"] = {t=5000, ico="Spell_Shadow_SiphonMana", m="silence"};
+  ["Gout of Flame"] = {t=10000, ico="Spell_Fire_Incinerate", m="silence"};
+  ["Heal Ragnaros"] = {t=10000, ico="Spell_Fire_SoulBurn", m="silence"};
+  ["Mend Dragon"] = {t=20000, ico="Spell_Shadow_LifeDrain", m="silence"};
+  ["Mind Flay"] = {t=3000, ico="Spell_Shadow_SiphonMana", m="silence"};
+  ["Rain of Fire"] = {t=8000, ico="Spell_Shadow_RainOfFire", m="silence"};
+  ["Rebuild"] = {t=20000, ico="Spell_Shadow_LifeDrain", m="silence"};
+  ["Reconstruct"] = {t=20000, ico="Spell_Shadow_LifeDrain", m="silence"};
+  ["Soul Tap"] = {t=12000, ico="Spell_Shadow_LifeDrain02", m="silence"};
+  ["Twisted Tranquility"] = {t=10000, ico="Spell_Nature_Tranquility", m="silence"};
+  ["Void Zone"] = {t=90000, ico="Spell_Frost_IceStorm", m="silence"};
+  ["Whirlwind"] = {t=2000, ico="Ability_Whirlwind", m="pacify"};
 }
 
 local Patterns = {
