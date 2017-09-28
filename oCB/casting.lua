@@ -40,23 +40,23 @@ function oCB:SpellStart(s, d, dIsInSeconds, dontRegister)
 	self.SpellIcon = BS:GetSpellIcon(s)
 	self.ItemIcon = self:FindItemIcon(s)
 	
-	if oCBRank and self.db.profile.CastingBar.spellShowRank then
-		if oCB:IsSpell(s, oCBRank) then
-			self:Debug("Rank Found: "..s.." "..oCBRank)
+	if self.oCBRank ~= nil and self.db.profile.CastingBar.spellShowRank then
+		if oCB:IsSpell(s, self.oCBRank) then
+			self:Debug("Rank Found: "..s.." "..self.oCBRank)
 			if self.db.profile.CastingBar.spellRomanRank then
-				local num = tonumber(oCBRank)
+				local num = tonumber(self.oCBRank)
 				if num and num > 0 then
-					oCBRank = roman[num]
+					self.oCBRank = roman[num]
 				end
 			end
 			if not self.db.profile.CastingBar.spellShortRank then
 				if (GetLocale() == "frFR") then
-					self.frames.CastingBar.Spell:SetText(s.." "..string.format(string.gsub(RANK_COLON, ":", "%%s"), oCBRank))
+					self.frames.CastingBar.Spell:SetText(s.." "..string.format(string.gsub(RANK_COLON, ":", "%%s"), self.oCBRank))
 				else
-					self.frames.CastingBar.Spell:SetText(s.." "..string.format(string.gsub(RANK_COLON, ":", " %%s"), oCBRank))
+					self.frames.CastingBar.Spell:SetText(s.." "..string.format(string.gsub(RANK_COLON, ":", " %%s"), self.oCBRank))
 				end
 			else
-				self.frames.CastingBar.Spell:SetText(s.." "..oCBRank)
+				self.frames.CastingBar.Spell:SetText(s.." "..self.oCBRank)
 			end
 		else
 			self.frames.CastingBar.Spell:SetText(s)
@@ -68,8 +68,8 @@ function oCB:SpellStart(s, d, dIsInSeconds, dontRegister)
 	self.frames.CastingBar.Time:SetText("")
 	self.frames.CastingBar.Delay:SetText("")
 	
-	if oCBCastSent then
-		local mylatency = math.floor((GetTime()-oCBCastSent)*1000)
+	if self.oCBCastSent ~= nil then
+		local mylatency = math.floor((GetTime()-self.oCBCastSent)*1000)
 		local w = math.floor(self.frames.CastingBar.Bar:GetWidth())
 		mylatency = mylatency
 		self.frames.CastingBar.Latency:SetText(mylatency.."ms")
@@ -95,14 +95,14 @@ function oCB:SpellStart(s, d, dIsInSeconds, dontRegister)
 				end
 			end
 			if not self.SpellIcon then self:Debug("Craft icon not found :(") end
-		elseif oCBTooltip then
-			self.ItemIcon = self:FindItemIcon(oCBTooltip)
+		elseif self.oCBTooltip ~= nil then
+			self.ItemIcon = self:FindItemIcon(self.oCBTooltip)
 		end
 	end
 
 	if not self.db.profile.CastingBar.hideIcon then
-		if oCBIcon == self.ItemIcon and oCBIcon ~= nil then
-			self.frames.CastingBar.Texture:SetTexture(oCBIcon)
+		if self.oCBIcon ~= nil and self.oCBIcon == self.ItemIcon then
+			self.frames.CastingBar.Texture:SetTexture(self.oCBIcon)
 			self.frames.CastingBar.Icon:Show()
 		elseif self.SpellIcon then
 			self.frames.CastingBar.Texture:SetTexture(self.SpellIcon)
@@ -153,7 +153,7 @@ function oCB:SpellStop(dontUnregister)
 	self.casting 	= nil
 	self.fadeOut 	= 1 -- spellstop
 	
-	oCBCastSent = nil
+	self.oCBCastSent = nil
 	
 	if not self.db.profile.lock then self:ShowTest() end
 	
@@ -186,7 +186,7 @@ function oCB:SpellFailed(dontUnregister)
 	self.fadeOut	= 1 -- spellfailed
 	self.holdTime = GetTime() + 1
 	
-	oCBCastSent = nil
+	self.oCBCastSent = nil
     
     if not dontUnregister then
         self:UnregisterEvent("SPELLCAST_STOP")
@@ -213,7 +213,7 @@ end
 
 function oCB:SpellChannelStart(d)
 	self:Debug("SpellChannelStart - Starting channel")
-	self:Debug("ChannelInfo - "..(oCBName or arg2).." - "..(oCBRank or "no rank").." - "..(oCBIcon or ""))
+	self:Debug("ChannelInfo - "..(self.oCBName or arg2).." - "..(self.oCBRank or "no rank").." - "..(self.oCBIcon or ""))
 	d = d / 1000
 	local c = self.db.profile.Colors.Channel
 	
@@ -225,25 +225,25 @@ function oCB:SpellChannelStart(d)
 	self.frames.CastingBar.Bar:SetMinMaxValues(self.startTime, self.endTime)
 	self.frames.CastingBar.Bar:SetValue(self.endTime)
 	
-	if oCBRank and self.db.profile.CastingBar.spellShowRank then
-		if oCB:IsSpell(oCBName, oCBRank) then
-			self:Debug("Found: "..oCBName.." (Rank: "..oCBRank..")")
+	if self.oCBRank ~= nil and self.db.profile.CastingBar.spellShowRank then
+		if oCB:IsSpell(self.oCBName, self.oCBRank) then
+			self:Debug("Found: "..self.oCBName.." (Rank: "..self.oCBRank..")")
 			if self.db.profile.CastingBar.spellRomanRank then
-				local num = tonumber(oCBRank)
+				local num = tonumber(self.oCBRank)
 				if num and num > 0 then
-					oCBRank = roman[num]
+					self.oCBRank = roman[num]
 				end
 			end
 			if not self.db.profile.CastingBar.spellShortRank then
-				self.frames.CastingBar.Spell:SetText(oCBName.." "..string.format(string.gsub(RANK_COLON, ":", "%%s"), oCBRank))
+				self.frames.CastingBar.Spell:SetText(self.oCBName.." "..string.format(string.gsub(RANK_COLON, ":", "%%s"), self.oCBRank))
 			else
-				self.frames.CastingBar.Spell:SetText(oCBName.." "..oCBRank)
+				self.frames.CastingBar.Spell:SetText(self.oCBName.." "..self.oCBRank)
 			end
 		else
-			self.frames.CastingBar.Spell:SetText(oCBName or arg2)
+			self.frames.CastingBar.Spell:SetText(self.oCBName or arg2)
 		end
 	else
-		self.frames.CastingBar.Spell:SetText(oCBName or arg2)
+		self.frames.CastingBar.Spell:SetText(self.oCBName or arg2)
 	end
 
 	self.frames.CastingBar.Time:SetText("")
@@ -253,8 +253,8 @@ function oCB:SpellChannelStart(d)
 	self.frames.CastingBar.Icon:Hide()
 	self.frames.CastingBar.Latency:SetText("")
 	
-	if oCBIcon and not self.db.profile.CastingBar.hideIcon then
-		self.frames.CastingBar.Texture:SetTexture(oCBIcon)
+	if self.oCBIcon ~= nil and not self.db.profile.CastingBar.hideIcon then
+		self.frames.CastingBar.Texture:SetTexture(self.oCBIcon)
 		self.frames.CastingBar.Icon:Show()
 	end
 	
@@ -281,7 +281,7 @@ function oCB:SpellChannelStop()
 	self.channeling = nil
 	self.fadeOut = 1 -- channelstop
 	
-	oCBCastSent = nil
+	self.oCBCastSent = nil
 	
 	if not self.db.profile.lock then self:ShowTest() end
 end

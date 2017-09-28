@@ -3,9 +3,9 @@
 ## Author: Haste, Athene, Laytya, Roadblock
 ## Notes: A player castbar replacement and target cast bar.
 ## Notes-frFR: Remplacement de la barre de cast et barre de cast de cible.
-## Version: 3.5.3
+## Version: 3.5.4
 ## DefaultState: Enabled
-## OptionalDeps: Ace2, DewdropLib
+## OptionalDeps: Ace2, DewdropLib, LibWaterfall
 ## LoadOnDemand: 0
 ## SavedVariables: oCBDB
 
@@ -15,7 +15,7 @@ Libs\AceOO-2.0\AceOO-2.0.lua
 Libs\AceLocale-2.2\AceLocale-2.2.lua
 Libs\AceEvent-2.0\AceEvent-2.0.lua
 Libs\AceAddon-2.0\AceAddon-2.0.lua
-Libs\AceHook-2.0\AceHook-2.0.lua
+Libs\AceHook-2.1\AceHook-2.1.lua
 Libs\AceDB-2.0\AceDB-2.0.lua
 Libs\AceConsole-2.0\AceConsole-2.0.lua
 Libs\AceDebug-2.0\AceDebug-2.0.lua

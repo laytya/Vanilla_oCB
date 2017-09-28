@@ -158,7 +158,7 @@ local Targets = {
   ["Young Wendigo"] = {p="Frost Breath", t=250, ico="Spell_Frost_FrostNova", m="silence"};
 }
 local Spells = {
-  ["Drag me (target)"] = {t=3500, ico="Temp", s=0, m="silence"};
+  ["Drag me (target)"] = {t=3500, ico="Temp", m="silence"};
   ['[PH] Teleport to Auberdine'] = {t=2000, ico="Temp", m="silence"};
   ['[PH] Teleport to Balthule'] = {t=2000, ico="Temp", m="silence"};
   ['[PH] Teleport to Booty Bay'] = {t=2000, ico="Temp", m="silence"};

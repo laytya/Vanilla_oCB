@@ -199,14 +199,14 @@ local Fonts 		= {
 	["Morpheus"] 	= "Fonts\\MORPHEUS.ttf"
 }
 
-oCB = AceLibrary("AceAddon-2.0"):new("AceEvent-2.0", "AceDebug-2.0", "AceHook-2.0", "AceDB-2.0", "AceConsole-2.0")
+oCB = AceLibrary("AceAddon-2.0"):new("AceEvent-2.0", "AceDebug-2.0", "AceHook-2.1", "AceDB-2.0", "AceConsole-2.0")
 local BS = AceLibrary("Babble-Spell-2.2")
 local waterfall 		= AceLibrary("Waterfall-1.0")
 local _, PlayerClass = UnitClass("player")
 
 function oCB:ShowTest()
-	oCBCastSent = GetTime()-0.666;
-	oCBIcon="Interface\\AddOns\\oCB\\Icon";
+	self.oCBCastSent = GetTime()-0.666
+	self.oCBIcon="Interface\\AddOns\\oCB\\Icon"
 	self:SpellStart("Drag me", 3.5, true, true)
 	self:SpellDelayed(0.5)
 	self:TargetCastStart("TargetBar", "Drag me (target)")
@@ -1204,6 +1204,10 @@ function oCB:OnEnable()
 	self:CreateFramework("BREATH", "oCBMirror1", "MirrorBar")
 	self:CreateFramework("EXHAUSTION","oCBMirror2", "MirrorBar")
 	self:CreateFramework("FEIGNDEATH","oCBMirror3", "MirrorBar")
+
+	self:SecureHook("CastSpellByName")
+	self:SecureHook("CastSpell")
+	self:SecureHook("UseAction")
 end
 
 function oCB:Events()
@@ -1262,62 +1266,50 @@ function oCB:savePosition()
 end
 
 function oCB:Split(msg, char)
-	local arr = { };
+	local arr = { }
 	while (string.find(msg, char) ) do
-		local iStart, iEnd = string.find(msg, char);
-		tinsert(arr, strsub(msg, 1, iStart-1));
-		msg = strsub(msg, iEnd+1, strlen(msg));
+		local iStart, iEnd = string.find(msg, char)
+		tinsert(arr, strsub(msg, 1, iStart-1))
+		msg = strsub(msg, iEnd+1, strlen(msg))
 	end
 	if ( strlen(msg) > 0 ) then
-		tinsert(arr, msg);
+		tinsert(arr, msg)
 	end
-	return arr;
+	return arr
 end
 
--- cast spell by name hook - Athene edit
-preoCB_csbn = CastSpellByName
-function oCB_csbn(pass, onSelf)
-	preoCB_csbn(pass, onSelf)
-	if pass and type(pass) == "string" then oCBIcon = BS:GetSpellIcon(pass) oCBName = pass end
-	if getglobal("GameTooltipTextLeft1"):GetText() then oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
-	oCBCastSent = GetTime()
+function oCB:CastSpellByName(pass, onSelf)
+	if pass and type(pass) == "string" then self.oCBIcon = BS:GetSpellIcon(pass) self.oCBName = pass end
+	if getglobal("GameTooltipTextLeft1"):GetText() then self.oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
+	self.oCBCastSent = GetTime()	
 end
-CastSpellByName = oCB_csbn
 
--- cast spell hook - Athene edit
-preoCB_cs = CastSpell
-function oCB_cs(pass, onSelf)
-	preoCB_cs(pass, onSelf)
-	if pass and type(pass) == "string" then oCBIcon = BS:GetSpellIcon(pass) oCBName = pass end
-	if getglobal("GameTooltipTextLeft1"):GetText() then oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
-	oCBCastSent = GetTime()
+function oCB:CastSpell(pass, onSelf)
+	if pass and type(pass) == "string" then self.oCBIcon = BS:GetSpellIcon(pass) self.oCBName = pass end
+	if getglobal("GameTooltipTextLeft1"):GetText() then self.oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
+	self.oCBCastSent = GetTime()	
 end
-CastSpell = oCB_cs
 
--- Use Action hook - Athene edit
-preoCB_use = UseAction
-function oCB_use(p1,p2,p3)
-	preoCB_use(p1,p2,p3)
-	oCBRank = nil	
-	if p1 then oCBIcon = GetActionTexture(p1) end
-	if p1 and true then oCBRank, oCBName = oCB:GetSpellRank(p1) end
-	if getglobal("GameTooltipTextLeft1"):GetText() then oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
-	oCBCastSent = GetTime()
+function oCB:UseAction(pass, cursor, onSelf)
+	self.oCBRank = nil	
+	if pass then self.oCBIcon = GetActionTexture(pass) end
+	if pass and true then self.oCBRank, self.oCBName = oCB:GetSpellRank(pass) end
+	if getglobal("GameTooltipTextLeft1"):GetText() then self.oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
+	self.oCBCastSent = GetTime()	
 end
-UseAction = oCB_use
 
-function ItemLinkToName(link)
-	return gsub(link,"^.*%[(.*)%].*$","%1");
+function oCB:ItemLinkToName(link)
+	return gsub(link,"^.*%[(.*)%].*$","%1")
 end
 
 function oCB:GetSpellRank(slot)
-	oCB_TooltipTextLeft1:SetText();
-	oCB_TooltipTextRight1:SetText();
-	oCB_Tooltip:SetAction(slot);
-	local start, stop, name, rank;
-	name = oCB_TooltipTextLeft1:GetText();
-	rank = oCB_TooltipTextRight1:GetText();
-	start, stop, rank = string.find((rank or ""), "(%d+)");
+	oCB_TooltipTextLeft1:SetText()
+	oCB_TooltipTextRight1:SetText()
+	oCB_Tooltip:SetAction(slot)
+	local start, stop, name, rank
+	name = oCB_TooltipTextLeft1:GetText()
+	rank = oCB_TooltipTextRight1:GetText()
+	start, stop, rank = string.find((rank or ""), "(%d+)")
 	if rank then
 		return rank, name
 	else
@@ -1331,9 +1323,9 @@ function oCB:IsSpell(spell, rank)
   end
   local i = 1
   if (GetLocale() == "frFR") then
-	rank = string.format(string.gsub(RANK_COLON, ":", "%%d"), tonumber(rank) or 1);
+	rank = string.format(string.gsub(RANK_COLON, ":", "%%d"), tonumber(rank) or 1)
   else
-	rank = string.format(string.gsub(RANK_COLON, ":", " %%d"), tonumber(rank) or 1);
+	rank = string.format(string.gsub(RANK_COLON, ":", " %%d"), tonumber(rank) or 1)
   end
   while true do
     local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL)
@@ -1341,47 +1333,47 @@ function oCB:IsSpell(spell, rank)
       do break end
     end
     if (spell == spellName and rank == spellRank) then
-      return true;
+      return true
     end
     i = i + 1
   end
-  return false;
+  return false
 end
 
 function oCB:FindItemIcon(item)
-	if ( not item ) or type(item) ~= "string" then return; end
-	item = string.lower(item);
-	local link;
+	if ( not item ) or type(item) ~= "string" then return end
+	item = string.lower(item)
+	local link,inventoryID
 	for i = 1,23 do
-		link = GetInventoryItemLink("player",i);
+		link = GetInventoryItemLink("player",i)
 		if ( link ) then
-			if ( item == string.lower(ItemLinkToName(link)) )then
-				return GetInventoryItemTexture('player', i);
+			if ( item == string.lower(oCB:ItemLinkToName(link)) )then
+				return GetInventoryItemTexture('player', i)
 			end
 		end
 	end
 	for i = 1,12 do
 		inventoryID = KeyRingButtonIDToInvSlotID(i)
-		link = GetInventoryItemLink("player",inventoryID);
+		link = GetInventoryItemLink("player",inventoryID)
 		if ( link ) then
-			if ( item == string.lower(ItemLinkToName(link)) )then
-				return GetInventoryItemTexture('player', inventoryID);
+			if ( item == string.lower(oCB:ItemLinkToName(link)) )then
+				return GetInventoryItemTexture('player', inventoryID)
 			end
 		end
 	end
-	local count, bag, slot, texture;
+	local count, bag, slot, texture
 	for i = 0,NUM_BAG_FRAMES do
 		for j = 1,MAX_CONTAINER_ITEMS do
-			link = GetContainerItemLink(i,j);
+			link = GetContainerItemLink(i,j)
 			if ( link ) then
-				if (string.find(string.lower(ItemLinkToName(link)), item)) then
-					bag, slot = i, j;
-					texture, count = GetContainerItemInfo(i,j);
+				if (string.find(string.lower(oCB:ItemLinkToName(link)), item)) then
+					bag, slot = i, j
+					texture, count = GetContainerItemInfo(i,j)
 				end
 			end
 		end
 	end
-	return texture;
+	return texture
 end
 
 function oCB:fmtTime(seconds)
