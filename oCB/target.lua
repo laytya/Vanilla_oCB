@@ -15,6 +15,7 @@ local Interrupts = {
   ["Kidney Shot"] = true;
   ["Silence"] = true;
   ["Counterspell"] = true;
+  ["Spell lock"] = true;
   ["Counterspell - Silenced"] = true;
   ["Bash"] = true;
   ["Fear"] = true;
@@ -682,7 +683,7 @@ local SpellChannel = {
   ["Gout of Flame"] = {t=10000, ico="Spell_Fire_Incinerate", m="silence"};
   ["Heal Ragnaros"] = {t=10000, ico="Spell_Fire_SoulBurn", m="silence"};
   ["Mend Dragon"] = {t=20000, ico="Spell_Shadow_LifeDrain", m="silence"};
-  ["Mind Flay"] = {t=3000, ico="Spell_Shadow_SiphonMana", m="silence"};
+  ["Mind Flay"] = {t=3000, ico="Spell_Shadow_SiphonMana", m="silence"}; -- "silence"
   ["Rain of Fire"] = {t=8000, ico="Spell_Shadow_RainOfFire", m="silence"};
   ["Rebuild"] = {t=20000, ico="Spell_Shadow_LifeDrain", m="silence"};
   ["Reconstruct"] = {t=20000, ico="Spell_Shadow_LifeDrain", m="silence"};
@@ -697,10 +698,12 @@ local Patterns = {
   ["SPELL_PERFORM"] = string.gsub(string.gsub(SPELLPERFORMOTHERSTART,"%d%$",""), "%%s", "(.+)"),
   ["SPELL_GAINS"] = string.gsub(string.gsub(AURAADDEDOTHERHELPFUL,"%d%$",""), "%%s", "(.+)"),
   ["SPELL_AFFLICTED"] = string.gsub(string.gsub(AURAADDEDOTHERHARMFUL,"%d%$",""), "%%s", "(.+)"),
-  ["SPELL_HIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGSELFOTHER,"%d%$",""),"%%d","%%d+"),"%%s","(.+)"),
-  ["SPELL_CRIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGCRITSELFOTHER,"%d%$",""),"%%d","%%d+"),"%%s","(.+)"),
-  ["OTHER_SPELL_HIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGOTHEROTHER,"%d%$",""), "%%s", "(.+)"), "%%d", "%%d+"),
-  ["OTHER_SPELL_CRIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGOTHEROTHER,"%d%$",""), "%%s", "(.+)"), "%%d", "%%d+"),
+  ["SPELL_AFFLICTED_SELF"] = string.gsub(string.gsub(AURAADDEDSELFHARMFUL,"%d%$",""), "%%s", "(.+)"),
+  ["SPELL_SUFFER_SELF"] = string.gsub(string.gsub(string.gsub(PERIODICAURADAMAGEOTHERSELF,"%.","%%..*"),"%%d","%%d+"),"%%s","(.+)"),
+  ["SPELL_HIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGSELFOTHER,"%.","%%..*"),"%%d","%%d+"),"%%s","(.+)"),
+  ["SPELL_CRIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGCRITSELFOTHER,"%.","%%..*"),"%%d","%%d+"),"%%s","(.+)"),
+  ["OTHER_SPELL_HIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGOTHEROTHER,"%.","%%..*"), "%%s", "(.+)"), "%%d", "%%d+"),
+  ["OTHER_SPELL_CRIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGCRITOTHEROTHER,"%.","%%..*"), "%%s", "(.+)"), "%%d", "%%d+"),
   ["SPELL_INTERRUPT"] = string.gsub(string.gsub(SPELLINTERRUPTSELFOTHER, "%d%$",""),"%%s","(.+)"),
   ["OTHER_SPELL_INTERRUPT"] = string.gsub(string.gsub(SPELLINTERRUPTOTHEROTHER,"%d%$",""),"%%s", "(.+)"),
 }
@@ -710,20 +713,36 @@ function oCB:OnTargetCasting()
   local now = GetTime()
   local test = not oCB.db.profile.lock
   local uname = UnitExists("target") and UnitName("target") or false
+  local db = oCB.db.profile.TargetBar
   if (uname and Casters[uname]) or test then
-    local spellname,starttime,casttime
+    local spellname,starttime,casttime,mechanic
     if (test) then
       spellname = "Drag me (target)"
       starttime = Casters["TargetBar"].starttime or 0
       casttime = Casters["TargetBar"].casttime or 0
+      mechanic = "silence"
     else
       spellname = Casters[uname].cast or ""
       starttime = Casters[uname].starttime or 0
       casttime = Casters[uname].casttime or 0
+      mechanic = Casters[uname].mechanic or ""
     end
 
     if starttime + casttime > now then
       if oCB.frames.TargetBar.Bar then
+        if mechanic == "pacify" and db.edgeFileStun ~= "None" then
+          oCB.frames.TargetBar:SetBackdrop({
+            bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16,
+            edgeFile = oCB.Borders[db.edgeFileStun], edgeSize = 16,
+            insets = {left = 4, right = 3, top = 4, bottom = 4},
+          })
+        else
+          oCB.frames.TargetBar:SetBackdrop({
+            bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16,
+            edgeFile = oCB.Borders[db.edgeFile], edgeSize = 16,
+            insets = {left = 4, right = 3, top = 4, bottom = 4},
+          })
+        end
         local val = now - starttime
         local w = oCB.frames.TargetBar:GetWidth()
         local sp = (val/casttime) * w
@@ -736,7 +755,7 @@ function oCB:OnTargetCasting()
         oCB.frames.TargetBar.Spark:SetPoint("CENTER", oCB.frames.TargetBar.Bar, "LEFT", sp, 0)
       end
     else
-      if not test then
+      if not (test) then
         Casters[uname] = nil
         oCB.targetFadeOut = 1
       end
@@ -783,6 +802,16 @@ function oCB:TargetCombatlog(msg)
       self:TargetCastStart(target,spell)
       return
     end
+    -- You are afflicted by (.+)
+    for spell in string.gfind(msg, Patterns.SPELL_AFFLICTED_SELF) do
+      self:TargetChannelCastStart("you", spell)
+      return
+    end
+    -- You suffer %d+ (.+) damage from (.+)'s (.+).
+    for _, target, spell in string.gfind(msg, Patterns.SPELL_SUFFER_SELF) do
+      self:TargetChannelCastStart(target, spell)
+      return
+    end
     -- (.+) gains (.+).
     for target, spell in string.gfind(msg, Patterns.SPELL_GAINS) do
       self:TargetCastStop(target, spell)
@@ -825,40 +854,88 @@ function oCB:TargetCombatlog(msg)
   end  
 end
 
+function oCB:TargetChannelCastStart(target,spell)
+  local uname = UnitExists("target") and UnitName("target") or false
+  if target == "you" then target = uname end
+  local casttime, icon, mechanic
+  local test = not self.db.profile.lock
+  local c = self.db.profile.Colors.TargetChannel
+  local now = GetTime()
+  self.targetFadeOut = nil -- caststart
+  if (uname) and not (test) then
+    local isPlayer = UnitIsPlayer("target")
+    if TargetChannel[uname] ~= nil then 
+      if TargetChannel[uname].p ~= nil and TargetChannel[uname].p == spell then
+        casttime = TargetChannel[uname].t / 1000
+        icon = TargetChannel[uname].ico
+        mechanic = TargetChannel[uname].m
+      elseif TargetChannel[uname][spell] ~= nil then
+        casttime = TargetChannel[uname][spell].t / 1000
+        icon = TargetChannel[uname][spell].ico
+        mechanic = TargetChannel[uname][spell].m
+      end
+      Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon, mechanic = mechanic}
+    elseif PlayerChannel[spell] ~= nil and isPlayer then
+      casttime =  PlayerChannel[spell].t / 1000
+      icon = PlayerChannel[spell].ico
+      mechanic = PlayerChannel[spell].m
+      Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon, mechanic = mechanic}
+    elseif SpellChannel[spell] ~= nil then
+      casttime = SpellChannel[spell].t / 1000
+      icon = SpellChannel[spell].ico
+      mechanic = SpellChannel[spell].m
+      Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon, mechanic = mechanic}
+    end
+  end
+  if Casters[target] then 
+    self.frames.TargetBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
+    self.frames.TargetBar:SetAlpha(1)
+    self.frames.TargetBar:Show()
+    if not self.db.profile.TargetBar.hideIcon then
+      self.frames.TargetBar.Texture:SetTexture(icon)
+      self.frames.TargetBar.Icon:Show()
+    end      
+  end  
+end
+
 function oCB:TargetCastStart(target,spell)
   local uname = UnitExists("target") and UnitName("target") or false
-  local casttime, icon
+  local casttime, icon, mechanic
   local test = not self.db.profile.lock
   local c = self.db.profile.Colors.TargetCasting
   local now = GetTime()
   self.targetFadeOut = nil -- caststart
-  if (uname) and not test then
+  if (uname) and not (test) then
     local isPlayer = UnitIsPlayer("target")
     if Targets[uname] ~= nil then 
       if Targets[uname].p ~= nil and Targets[uname].p == spell then
         casttime = Targets[uname].t / 1000
         icon = Targets[uname].ico
+        mechanic = Targets[uname].m
       elseif Targets[uname][spell] ~= nil then
         casttime = Targets[uname][spell].t / 1000
         icon = Targets[uname][spell].ico
+        mechanic = Targets[uname][spell].m
       end
-      Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon}
+      Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon, mechanic = mechanic}
     elseif PlayerSpells[spell] ~= nil and isPlayer then
       casttime =  PlayerSpells[spell].t / 1000
       icon = PlayerSpells[spell].ico
-      Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon}
+      mechanic = PlayerSpells[spell].m
+      Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon, mechanic = mechanic}
     elseif Spells[spell] ~= nil then
       casttime = Spells[spell].t / 1000
       icon = Spells[spell].ico
-      Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon}
+      mechanic = Spells[spell].m
+      Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon, mechanic = mechanic}
     end
   end
-  if (test) then
+  if (test) and Spells[spell] then
     casttime = Spells[spell].t / 1000
     icon = Spells[spell].ico
-    Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon}
+    Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon, mechanic = "silence"}
   end
-  if Casters[uname] or test then 
+  if Casters[uname] or (test) then 
     self.frames.TargetBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
     self.frames.TargetBar:SetAlpha(1)
     self.frames.TargetBar:Show()

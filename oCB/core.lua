@@ -44,6 +44,7 @@ local Default				= {
 		height			= 31,
 		hideIcon		= false,
 		edgeFile		= "None",
+		edgeFileStun		= "Shielded",
 		texture			= "Striped",
 		timeSize		= 19,
 		timeFont		= "Visitor1",
@@ -87,8 +88,8 @@ local Default				= {
 		Channel					= {r=.3, g=.3, b=1},
 		Failed					= {r=1, g=0, b=0},
 		TargetCasting		= {r=1, g=204/255, b=0},
-		TargetChannel		= {r=0, g=0, b=0},
-		TargetComplete 	= {r=1, g=77/255, b=0}, -- cast finished ("success" for friendlies, "fail" for enemies)
+		TargetChannel		= {r=102/255, g=102/255, b=1},
+		TargetComplete		= {r=1, g=77/255, b=0}, -- cast finished ("success" for friendlies, "fail" for enemies)
 		TargetStopped		= {r=0, g=204/255, b=102/255}, -- cast interrupted ("fail" for friendlies, "success" for enemies)
 	},
 	Mirror				= {
@@ -167,6 +168,7 @@ local Textures		= {
 }
 local Borders 		= {
 	["Default"] 		= "Interface\\AddOns\\oCB\\border\\roth",
+	["Shielded"]		= "Interface\\AddOns\\oCB\\border\\shielded",
 	["None"] 		= ""
 }
 local Outlines 		= {
@@ -684,8 +686,17 @@ function oCB:OnInitialize()
 						end,
 						validate = {"Default","None"}
 					},
+					stunborder = {
+						name = "Mechanic Indicator", type = 'text', order = 4,
+						desc = "Enable border override for pacify-type interrupts.",
+						get = function() return self.db.profile.TargetBar.edgeFileStun end,
+						set = function(v)
+							self.db.profile.TargetBar.edgeFileStun = v
+						end,
+						validate = {"None","Shielded"}
+					},
 					texture = {
-						name = "Texture", type = 'text', order = 4,
+						name = "Texture", type = 'text', order = 5,
 						desc = "Toggle the texture.",
 						get = function() return self.db.profile.TargetBar.texture end,
 						set = function(v)
