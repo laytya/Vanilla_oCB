@@ -44,7 +44,7 @@ local Default				= {
 		height			= 31,
 		hideIcon		= false,
 		edgeFile		= "None",
-		edgeFileStun		= "Shielded",
+		edgeFileStun= "Shielded",
 		texture			= "Striped",
 		timeSize		= 19,
 		timeFont		= "Visitor1",
@@ -89,7 +89,7 @@ local Default				= {
 		Failed					= {r=1, g=0, b=0},
 		TargetCasting		= {r=1, g=204/255, b=0},
 		TargetChannel		= {r=102/255, g=102/255, b=1},
-		TargetComplete		= {r=1, g=77/255, b=0}, -- cast finished ("success" for friendlies, "fail" for enemies)
+		TargetComplete 	= {r=1, g=77/255, b=0}, -- cast finished ("success" for friendlies, "fail" for enemies)
 		TargetStopped		= {r=0, g=204/255, b=102/255}, -- cast interrupted ("fail" for friendlies, "success" for enemies)
 	},
 	Mirror				= {
@@ -1324,7 +1324,7 @@ function oCB:GetSpellRank(slot)
 	if rank then
 		return rank, name
 	else
-		return false, name
+		return nil, name
 	end
 end
 
