@@ -5,6 +5,8 @@ function oCB:CreateFramework(b, n, s)
 	
 	if(s =="MirrorBar") then
 		self.frames[b]:SetScript("OnUpdate", self.OnMirror)
+	elseif (s =="TargetBar") then
+		self.frames[b]:SetScript("OnUpdate", self.OnTargetCasting)
 	else
 		self.frames[b]:SetScript("OnUpdate", self.OnCasting)
 	end
@@ -15,7 +17,7 @@ function oCB:CreateFramework(b, n, s)
 	self.frames[b]:SetScript("OnDragStop", function() this:StopMovingOrSizing() self:savePosition() end)
 	
 	self.frames[b].Bar = CreateFrame("StatusBar", nil, self.frames[b])
-	if(s ~="MirrorBar") then
+	if(s ~="MirrorBar") and (s ~="TargetBar") then
 		self.frames[b].LagBar = CreateFrame("StatusBar", nil, self.frames[b])
 		self.frames[b].Delay = self.frames[b].Bar:CreateFontString(nil, "OVERLAY")
 		self.frames[b].Latency = self.frames[b].Bar:CreateFontString(nil, "OVERLAY")
@@ -105,7 +107,7 @@ function oCB:Layout(b, s)
 	self.frames[b].Spell:ClearAllPoints()
 	self.frames[b].Spell:SetPoint("LEFT", self.frames[b], "LEFT", 15,1)
 	
-	if(s ~="MirrorBar") then
+	if(s ~="MirrorBar") and (s ~="TargetBar") then
 		if db.hideLagBar then
 			self.frames[b].LagBar:Hide()
 		else

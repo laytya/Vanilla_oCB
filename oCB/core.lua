@@ -39,6 +39,28 @@ local Default				= {
 		latencyFontShadowOffsetY = -1,
 		latencyOutline	= "None",
 	},
+	TargetBar			= {
+		width 			= 320,
+		height			= 31,
+		hideIcon		= false,
+		edgeFile		= "None",
+		edgeFileStun= "Shielded",
+		texture			= "Striped",
+		timeSize		= 19,
+		timeFont		= "Visitor1",
+		timeFontMonochrome = true,
+		timeFontShadow = true,
+		timeFontShadowOffsetX = 1,
+		timeFontShadowOffsetY = -1,
+		timeOutline	= "None",
+		spellSize		= 13,
+		spellFont		= "Visitor2",
+		spellFontMonochrome = true,
+		spellFontShadow = true,
+		spellFontShadowOffsetX = 1,
+		spellFontShadowOffsetY = -1,
+		spellOutline	= "None",
+	},	
 	MirrorBar			= {
 		width 			= 320,
 		height			= 24,
@@ -60,11 +82,15 @@ local Default				= {
 		spellFontShadowOffsetY = -1,
 		spellOutline	= "None",
 	},
-	Colors				= {
-		Complete		= {r=.8431372549019608, g=.8352941176470589, b=.8901960784313725},
-		Casting			= {r=.4784313725490196, g=.4666666666666667, b=.4901960784313725},
-		Channel			= {r=.3, g=.3, b=1},
-		Failed			= {r=1, g=0, b=0},
+	Colors						= {
+		Complete				= {r=.8431372549019608, g=.8352941176470589, b=.8901960784313725},
+		Casting					= {r=.4784313725490196, g=.4666666666666667, b=.4901960784313725},
+		Channel					= {r=.3, g=.3, b=1},
+		Failed					= {r=1, g=0, b=0},
+		TargetCasting		= {r=1, g=204/255, b=0},
+		TargetChannel		= {r=102/255, g=102/255, b=1},
+		TargetComplete 	= {r=1, g=77/255, b=0}, -- cast finished ("success" for friendlies, "fail" for enemies)
+		TargetStopped		= {r=0, g=204/255, b=102/255}, -- cast interrupted ("fail" for friendlies, "success" for enemies)
 	},
 	Mirror				= {
 		EXHAUSTION 		= {r=1, g=.9, b=0},
@@ -142,6 +168,7 @@ local Textures		= {
 }
 local Borders 		= {
 	["Default"] 		= "Interface\\AddOns\\oCB\\border\\roth",
+	["Shielded"]		= "Interface\\AddOns\\oCB\\border\\shielded",
 	["None"] 		= ""
 }
 local Outlines 		= {
@@ -174,16 +201,17 @@ local Fonts 		= {
 	["Morpheus"] 	= "Fonts\\MORPHEUS.ttf"
 }
 
-oCB = AceLibrary("AceAddon-2.0"):new("AceEvent-2.0", "AceDebug-2.0", "AceHook-2.0", "AceDB-2.0", "AceConsole-2.0")
+oCB = AceLibrary("AceAddon-2.0"):new("AceEvent-2.0", "AceDebug-2.0", "AceHook-2.1", "AceDB-2.0", "AceConsole-2.0")
 local BS = AceLibrary("Babble-Spell-2.2")
 local waterfall 		= AceLibrary("Waterfall-1.0")
 local _, PlayerClass = UnitClass("player")
 
 function oCB:ShowTest()
-	oCBCastSent = GetTime()-0.666;
-	oCBIcon="Interface\\AddOns\\oCB\\Icon";
+	self.oCBCastSent = GetTime()-0.666
+	self.oCBIcon="Interface\\AddOns\\oCB\\Icon"
 	self:SpellStart("Drag me", 3.5, true, true)
 	self:SpellDelayed(0.5)
+	self:TargetCastStart("TargetBar", "Drag me (target)")
 	self:MIRROR_TIMER_START("EXHAUSTION", 0, 10, 1, 0, EXHAUSTION_LABEL)
 	self:MIRROR_TIMER_START("BREATH", 0, 10, 1, 0, BREATH_LABEL)
 	if PlayerClass == "HUNTER" then
@@ -197,6 +225,7 @@ end
 
 function oCB:HideTest()
 	self:SpellStop(true)
+	self:TargetCastStop("TargetBar", "Drag me (target)")
 	self:MIRROR_TIMER_STOP("EXHAUSTION")
 	self:MIRROR_TIMER_STOP("BREATH")
 	if PlayerClass == "HUNTER" then
@@ -625,8 +654,218 @@ function oCB:OnInitialize()
 					}
 				}
 			},
+			targetbar = {
+				name = "Target Bar", type = 'group', order = 5,
+				desc = "Target Cast Bar",
+				args = {
+					width = {
+						name = "Width", type = 'range', min = 10, max = 500, step = 1, order = 1,
+						desc = "Set the width of the target cast bar.",
+						get = function() return self.db.profile.TargetBar.width end,
+						set = function(v)
+							self.db.profile.TargetBar.width = v
+							self:Layout("TargetBar", "TargetBar")
+						end
+					},
+					height = {
+						name = "Height", type = 'range', min = 5, max = 50, step = 1, order = 2,
+						desc = "Set the height of the target cast bar.",
+						get = function() return self.db.profile.TargetBar.height end,
+						set = function(v)
+							self.db.profile.TargetBar.height = v
+							self:Layout("TargetBar", "TargetBar")
+						end
+					},
+					border = {
+						name = "Border", type = 'text', order = 3,
+						desc = "Toggle the border.",
+						get = function() return self.db.profile.TargetBar.edgeFile end,
+						set = function(v)
+							self.db.profile.TargetBar.edgeFile = v
+							self:Layout("TargetBar", "TargetBar")
+						end,
+						validate = {"Default","None"}
+					},
+					stunborder = {
+						name = "Mechanic Indicator", type = 'text', order = 4,
+						desc = "Enable border override for pacify-type interrupts.",
+						get = function() return self.db.profile.TargetBar.edgeFileStun end,
+						set = function(v)
+							self.db.profile.TargetBar.edgeFileStun = v
+						end,
+						validate = {"None","Shielded"}
+					},
+					texture = {
+						name = "Texture", type = 'text', order = 5,
+						desc = "Toggle the texture.",
+						get = function() return self.db.profile.TargetBar.texture end,
+						set = function(v)
+							self.db.profile.TargetBar.texture = v
+							self:Layout("TargetBar", "TargetBar")
+						end,
+						validate = {"Aluminium", "Armory", "BantoBar", "Bars", "Blizzard", "Bumps", "Button", "Charcoal", "Cilo", "Cloud", "Comet", "Dabs", "DarkBottom", "Diagonal", "Empty", "Falumn", "Fifths", "Flat", "Fourths", "Frost", "Glamour", "Glamour2", "Glamour3", "Glamour4", "Glamour5", "Glamour6", "Glamour7", "Glass", "Glaze", "Glaze2", "Gloss", "Graphite", "Grid", "Hatched", "Healbot", "LiteStep", "LiteStepLite", "Lyfe", "Melli", "MelliDark", "MelliDarkRough", "Minimalist", "Default", "Otravi", "Outline", "Perl", "Perl2", "Pill", "Rain", "Rocks", "Round", "Ruben", "Runes", "Skewed", "Smooth", "Smoothv2", "Smudge", "Steel", "Striped", "Tube", "Water", "Wglass", "Wisps", "Xeon"}
+					},
+					hideicon = {
+						name = "Hide Icon", type = 'toggle', order = 5,
+						desc = "Show/Hide the icon.",
+						get = function() return self.db.profile.TargetBar.hideIcon end,
+						set = function()
+							self.db.profile.TargetBar.hideIcon = not self.db.profile.TargetBar.hideIcon
+							self:Layout("TargetBar", "TargetBar")
+						end
+					},
+					font = {
+						name = "Font", type = 'group',
+						desc = "Set the font size of different elements.",
+						args = {
+							spell = {
+								name = "Spell", type = 'group',
+								desc = "Spell font settings",
+								args = {
+									size = {
+										name = "Size", type = 'range', min = 6, max = 32, step = 1,
+										desc = "Set the font size on the spellname.",
+										get = function() return self.db.profile.TargetBar.spellSize end,
+										set = function(v)
+											self.db.profile.TargetBar.spellSize = v
+											self:Layout("TargetBar", "TargetBar")
+										end
+									},
+									font = {
+										name = "Font", type = 'text',
+										desc = "Choose the font.",
+										get = function() return self.db.profile.TargetBar.spellFont end,
+										set = function(v)
+											self.db.profile.TargetBar.spellFont = v
+											self:Layout("TargetBar", "TargetBar")
+										end,
+										validate = {"Adventure", "Backsplatter", "Bazooka", "BlackCastleMF", "Budhand", "Comic", "Cooline", "Creeper", "Defused", "Exocet", "FuturaBold", "Mailrays", "Pepsi", "Porky", "Signature", "Visitor1", "Visitor2", "Yellowjacket", "Friz Quadrata", "Arial Narrow", "Skurri", "Morpheus"}
+									},
+									outline = {
+										name = "Outline", type = 'text',
+										desc = "Choose the Outline.",
+										get = function() return self.db.profile.TargetBar.spellOutline end,
+										set = function(v)
+											self.db.profile.TargetBar.spellOutline = v
+											self:Layout("TargetBar", "TargetBar")
+										end,
+										validate = {"Normal", "Thick", "None"}
+									},
+									shadow = {
+										name = "Shadow", type = 'toggle',
+										desc = "Toggle shadow.",
+										get = function() return self.db.profile.TargetBar.spellFontShadow end,
+										set = function() self.db.profile.TargetBar.spellFontShadow = not self.db.profile.TargetBar.spellFontShadow self:Layout("TargetBar", "TargetBar") end
+									},
+									shadowoffset = {
+										name = "Shadow Offset", type = 'group', hidden = function() return not self.db.profile.TargetBar.spellFontShadow end,
+										desc = "Shadow offset settings",
+										args = {
+											x = {
+												name = "Offset X", type = 'range', min = -10, max = 10, step = 1,
+												desc = "Set the font shadow offset.",
+												get = function() return self.db.profile.TargetBar.spellFontShadowOffsetX end,
+												set = function(v)
+													self.db.profile.TargetBar.spellFontShadowOffsetX = v
+													self:Layout("TargetBar", "TargetBar")
+												end
+											},
+											y = {
+												name = "Offset Y", type = 'range', min = -10, max = 10, step = 1,
+												desc = "Set the font shadow offset.",
+												get = function() return self.db.profile.TargetBar.spellFontShadowOffsetY end,
+												set = function(v)
+													self.db.profile.TargetBar.spellFontShadowOffsetY = v
+													self:Layout("TargetBar", "TargetBar")
+												end
+											},
+										}
+									},
+									monochrome = {
+										name = "Monochrome", type = 'toggle',
+										desc = "Toggle monochrome.",
+										get = function() return self.db.profile.TargetBar.spellFontMonochrome end,
+										set = function() self.db.profile.TargetBar.spellFontMonochrome = not self.db.profile.TargetBar.spellFontMonochrome self:Layout("TargetBar", "TargetBar") end
+									},
+								}
+							},
+							time = {
+								name = "Time", type = 'group',
+								desc = "Spell time settings",
+								args = {
+									size = {
+										name = "Size", type = 'range', min = 6, max = 32, step = 1,
+										desc = "Set the font size on the spell time.",
+										get = function() return self.db.profile.TargetBar.timeSize end,
+										set = function(v)
+											self.db.profile.TargetBar.timeSize = v
+											self:Layout("TargetBar", "TargetBar")
+										end
+									},
+									font = {
+										name = "Font", type = 'text',
+										desc = "Choose the font.",
+										get = function() return self.db.profile.TargetBar.timeFont end,
+										set = function(v)
+											self.db.profile.TargetBar.timeFont = v
+											self:Layout("TargetBar", "TargetBar")
+										end,
+										validate = {"Adventure", "Backsplatter", "Bazooka", "BlackCastleMF", "Budhand", "Comic", "Cooline", "Creeper", "Defused", "Exocet", "FuturaBold", "Mailrays", "Pepsi", "Porky", "Signature", "Visitor1", "Visitor2", "Yellowjacket", "Friz Quadrata", "Arial Narrow", "Skurri", "Morpheus"}
+									},
+									outline = {
+										name = "Outline", type = 'text',
+										desc = "Choose the Outline.",
+										get = function() return self.db.profile.TargetBar.timeOutline end,
+										set = function(v)
+											self.db.profile.TargetBar.timeOutline = v
+											self:Layout("TargetBar", "TargetBar")
+										end,
+										validate = {"Normal", "Thick", "None"}
+									},
+									shadow = {
+										name = "Shadow", type = 'toggle',
+										desc = "Toggle shadow.",
+										get = function() return self.db.profile.TargetBar.timeFontShadow end,
+										set = function() self.db.profile.TargetBar.timeFontShadow = not self.db.profile.TargetBar.timeFontShadow self:Layout("TargetBar", "TargetBar") end
+									},
+									shadowoffset = {
+										name = "Shadow Offset", type = 'group', hidden = function() return not self.db.profile.TargetBar.timeFontShadow end,
+										desc = "Shadow offset settings",
+										args = {
+											x = {
+												name = "Offset X", type = 'range', min = -10, max = 10, step = 1,
+												desc = "Set the font shadow offset.",
+												get = function() return self.db.profile.TargetBar.timeFontShadowOffsetX end,
+												set = function(v)
+													self.db.profile.TargetBar.timeFontShadowOffsetX = v
+													self:Layout("TargetBar", "TargetBar")
+												end
+											},
+											y = {
+												name = "Offset Y", type = 'range', min = -10, max = 10, step = 1,
+												desc = "Set the font shadow offset.",
+												get = function() return self.db.profile.TargetBar.timeFontShadowOffsetY end,
+												set = function(v)
+													self.db.profile.TargetBar.timeFontShadowOffsetY = v
+													self:Layout("TargetBar", "TargetBar")
+												end
+											},
+										}
+									},
+									monochrome = {
+										name = "Monochrome", type = 'toggle',
+										desc = "Toggle monochrome.",
+										get = function() return self.db.profile.TargetBar.timeFontMonochrome end,
+										set = function() self.db.profile.TargetBar.timeFontMonochrome = not self.db.profile.TargetBar.timeFontMonochrome self:Layout("TargetBar", "TargetBar") end
+									},
+								}				
+							}
+						}
+					}
+				}
+			},			
 			mirrorbar = {
-				name = "Mirror Bar", type = 'group', order = 4,
+				name = "Mirror Bar", type = 'group', order = 5,
 				desc = "Mirror Bar",
 				args = {
 					width = {
@@ -857,7 +1096,7 @@ function oCB:OnInitialize()
 				}
 			},
 			colors = {
-				name = "Colors", type = 'group', order = 5,
+				name = "Colors", type = 'group', order = 6,
 				desc = "Set the bar colors.",
 				args = {
 					spell = {
@@ -895,7 +1134,43 @@ function oCB:OnInitialize()
 							return v.r,v.g,v.b
 						end,
 						set = function(r,g,b) self.db.profile.Colors.Failed = {r=r,g=g,b=b} end
-					}
+					},
+					targetspell = {
+						name = "Target Casting", type = 'color',
+						desc = "Sets the color of the target cast bar.",
+						get = function()
+							local v = self.db.profile.Colors.TargetCasting
+							return v.r,v.g,v.b
+						end,
+						set = function(r,g,b) self.db.profile.Colors.TargetCasting = {r=r,g=g,b=b} end
+					},
+					targetchannel = {
+						name = "Target Channel", type = 'color',
+						desc = "Sets the color of the target channel cast bar.",
+						get = function()
+							local v = self.db.profile.Colors.TargetChannel
+							return v.r,v.g,v.b
+						end,
+						set = function(r,g,b) self.db.profile.Colors.TargetChannel = {r=r,g=g,b=b} end
+					},					
+					targetfailed = {
+						name = "Target Interrupted", type = 'color',
+						desc = "Sets the color of interrupted target casts.",
+						get = function()
+							local v = self.db.profile.Colors.TargetStopped
+							return v.r,v.g,v.b
+						end,
+						set = function(r,g,b) self.db.profile.Colors.TargetStopped = {r=r,g=g,b=b} end
+					},
+					targetsuccess = {
+						name = "Target Complete", type = 'color',
+						desc = "Sets the color of completed target casts.",
+						get = function()
+							local v = self.db.profile.Colors.TargetComplete
+							return v.r,v.g,v.b
+						end,
+						set = function(r,g,b) self.db.profile.Colors.TargetComplete = {r=r,g=g,b=b} end
+					},
 				}
 			}
 		}
@@ -923,6 +1198,7 @@ end
 function oCB:Reset()
 	self:ResetDB("profile")
 	self:Layout("CastingBar")
+	self:Layout("TargetBar", "TargetBar")
 	self:Layout("BREATH", "MirrorBar")
 	self:Layout("EXHAUSTION", "MirrorBar")
 	self:Layout("FEIGNDEATH", "MirrorBar")
@@ -935,9 +1211,14 @@ function oCB:OnEnable()
 	self:HideBlizzCB()
 	
 	self:CreateFramework("CastingBar", "oCBFrame")
+	self:CreateFramework("TargetBar", "oCBTargetFrame", "TargetBar")
 	self:CreateFramework("BREATH", "oCBMirror1", "MirrorBar")
 	self:CreateFramework("EXHAUSTION","oCBMirror2", "MirrorBar")
 	self:CreateFramework("FEIGNDEATH","oCBMirror3", "MirrorBar")
+
+	self:SecureHook("CastSpellByName")
+	self:SecureHook("CastSpell")
+	self:SecureHook("UseAction")
 end
 
 function oCB:Events()
@@ -949,6 +1230,26 @@ function oCB:Events()
 	self:RegisterEvent("MIRROR_TIMER_START")
 	self:RegisterEvent("MIRROR_TIMER_PAUSE")
 	self:RegisterEvent("MIRROR_TIMER_STOP")
+
+  self:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_FRIENDLYPLAYER_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_FRIENDLYPLAYER_BUFF", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_BUFFS", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_FRIENDLYPLAYER_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PARTY_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PARTY_BUFF", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_PARTY_BUFFS", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_CREATURE_BUFFS", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE", "TargetCombatlog")
+  self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_BUFF", "TargetCombatlog")
+  self:RegisterEvent("PLAYER_TARGET_CHANGED", "TargetChanged")	
 	
 	UIParent:UnregisterEvent("MIRROR_TIMER_START")
 end
@@ -976,66 +1277,54 @@ function oCB:savePosition()
 end
 
 function oCB:Split(msg, char)
-	local arr = { };
+	local arr = { }
 	while (string.find(msg, char) ) do
-		local iStart, iEnd = string.find(msg, char);
-		tinsert(arr, strsub(msg, 1, iStart-1));
-		msg = strsub(msg, iEnd+1, strlen(msg));
+		local iStart, iEnd = string.find(msg, char)
+		tinsert(arr, strsub(msg, 1, iStart-1))
+		msg = strsub(msg, iEnd+1, strlen(msg))
 	end
 	if ( strlen(msg) > 0 ) then
-		tinsert(arr, msg);
+		tinsert(arr, msg)
 	end
-	return arr;
+	return arr
 end
 
--- cast spell by name hook - Athene edit
-preoCB_csbn = CastSpellByName
-function oCB_csbn(pass, onSelf)
-	preoCB_csbn(pass, onSelf)
-	if pass and type(pass) == "string" then oCBIcon = BS:GetSpellIcon(pass) oCBName = pass end
-	if getglobal("GameTooltipTextLeft1"):GetText() then oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
-	oCBCastSent = GetTime()
+function oCB:CastSpellByName(pass, onSelf)
+	if pass and type(pass) == "string" then self.oCBIcon = BS:GetSpellIcon(pass) self.oCBName = pass end
+	if getglobal("GameTooltipTextLeft1"):GetText() then self.oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
+	self.oCBCastSent = GetTime()	
 end
-CastSpellByName = oCB_csbn
 
--- cast spell hook - Athene edit
-preoCB_cs = CastSpell
-function oCB_cs(pass, onSelf)
-	preoCB_cs(pass, onSelf)
-	if pass and type(pass) == "string" then oCBIcon = BS:GetSpellIcon(pass) oCBName = pass end
-	if getglobal("GameTooltipTextLeft1"):GetText() then oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
-	oCBCastSent = GetTime()
+function oCB:CastSpell(pass, onSelf)
+	if pass and type(pass) == "string" then self.oCBIcon = BS:GetSpellIcon(pass) self.oCBName = pass end
+	if getglobal("GameTooltipTextLeft1"):GetText() then self.oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
+	self.oCBCastSent = GetTime()	
 end
-CastSpell = oCB_cs
 
--- Use Action hook - Athene edit
-preoCB_use = UseAction
-function oCB_use(p1,p2,p3)
-	preoCB_use(p1,p2,p3)
-	oCBRank = nil	
-	if p1 then oCBIcon = GetActionTexture(p1) end
-	if p1 and true then oCBRank, oCBName = oCB:GetSpellRank(p1) end
-	if getglobal("GameTooltipTextLeft1"):GetText() then oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
-	oCBCastSent = GetTime()
+function oCB:UseAction(pass, cursor, onSelf)
+	self.oCBRank = nil	
+	if pass then self.oCBIcon = GetActionTexture(pass) end
+	if pass and true then self.oCBRank, self.oCBName = oCB:GetSpellRank(pass) end
+	if getglobal("GameTooltipTextLeft1"):GetText() then self.oCBTooltip = getglobal("GameTooltipTextLeft1"):GetText() end
+	self.oCBCastSent = GetTime()	
 end
-UseAction = oCB_use
 
-function ItemLinkToName(link)
-	return gsub(link,"^.*%[(.*)%].*$","%1");
+function oCB:ItemLinkToName(link)
+	return gsub(link,"^.*%[(.*)%].*$","%1")
 end
 
 function oCB:GetSpellRank(slot)
-	oCB_TooltipTextLeft1:SetText();
-	oCB_TooltipTextRight1:SetText();
-	oCB_Tooltip:SetAction(slot);
-	local start, stop, name, rank;
-	name = oCB_TooltipTextLeft1:GetText();
-	rank = oCB_TooltipTextRight1:GetText();
-	start, stop, rank = string.find((rank or ""), "(%d+)");
+	oCB_TooltipTextLeft1:SetText()
+	oCB_TooltipTextRight1:SetText()
+	oCB_Tooltip:SetAction(slot)
+	local start, stop, name, rank
+	name = oCB_TooltipTextLeft1:GetText()
+	rank = oCB_TooltipTextRight1:GetText()
+	start, stop, rank = string.find((rank or ""), "(%d+)")
 	if rank then
 		return rank, name
 	else
-		return false, name
+		return nil, name
 	end
 end
 
@@ -1045,9 +1334,9 @@ function oCB:IsSpell(spell, rank)
   end
   local i = 1
   if (GetLocale() == "frFR") then
-	rank = string.format(string.gsub(RANK_COLON, ":", "%%d"), tonumber(rank) or 1);
+	rank = string.format(string.gsub(RANK_COLON, ":", "%%d"), tonumber(rank) or 1)
   else
-	rank = string.format(string.gsub(RANK_COLON, ":", " %%d"), tonumber(rank) or 1);
+	rank = string.format(string.gsub(RANK_COLON, ":", " %%d"), tonumber(rank) or 1)
   end
   while true do
     local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL)
@@ -1055,45 +1344,61 @@ function oCB:IsSpell(spell, rank)
       do break end
     end
     if (spell == spellName and rank == spellRank) then
-      return true;
+      return true
     end
     i = i + 1
   end
-  return false;
+  return false
 end
 
 function oCB:FindItemIcon(item)
-	if ( not item ) or type(item) ~= "string" then return; end
-	item = string.lower(item);
-	local link;
+	if ( not item ) or type(item) ~= "string" then return end
+	item = string.lower(item)
+	local link,inventoryID
 	for i = 1,23 do
-		link = GetInventoryItemLink("player",i);
+		link = GetInventoryItemLink("player",i)
 		if ( link ) then
-			if ( item == string.lower(ItemLinkToName(link)) )then
-				return GetInventoryItemTexture('player', i);
+			if ( item == string.lower(oCB:ItemLinkToName(link)) )then
+				return GetInventoryItemTexture('player', i)
 			end
 		end
 	end
 	for i = 1,12 do
 		inventoryID = KeyRingButtonIDToInvSlotID(i)
-		link = GetInventoryItemLink("player",inventoryID);
+		link = GetInventoryItemLink("player",inventoryID)
 		if ( link ) then
-			if ( item == string.lower(ItemLinkToName(link)) )then
-				return GetInventoryItemTexture('player', inventoryID);
+			if ( item == string.lower(oCB:ItemLinkToName(link)) )then
+				return GetInventoryItemTexture('player', inventoryID)
 			end
 		end
 	end
-	local count, bag, slot, texture;
+	local count, bag, slot, texture
 	for i = 0,NUM_BAG_FRAMES do
 		for j = 1,MAX_CONTAINER_ITEMS do
-			link = GetContainerItemLink(i,j);
+			link = GetContainerItemLink(i,j)
 			if ( link ) then
-				if (string.find(string.lower(ItemLinkToName(link)), item)) then
-					bag, slot = i, j;
-					texture, count = GetContainerItemInfo(i,j);
+				if (string.find(string.lower(oCB:ItemLinkToName(link)), item)) then
+					bag, slot = i, j
+					texture, count = GetContainerItemInfo(i,j)
 				end
 			end
 		end
 	end
-	return texture;
+	return texture
+end
+
+function oCB:fmtTime(seconds)
+	local timestring = ""
+	if not tonumber(seconds) then return timestring end
+  local d, h, m, s = ChatFrame_TimeBreakDown(seconds)
+  if d > 0 then
+    timestring =  string.format( "%02dd:%02dh:%02dm:%.1f", d,h,m,s)
+  elseif h > 0 then
+    timestring = string.format( "%02dh:%02dm:%.1f", h,m,s)
+  elseif m > 0 then
+    timestring = string.format( "%02dm:%.1f", m,s)
+  elseif s > 0 then
+    timestring = string.format( "%.1f", s)
+  end
+  return timestring
 end
