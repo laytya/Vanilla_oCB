@@ -8,10 +8,15 @@ local roman = {
 	'XVI', 'XVII', 'XVIII', 'XIX', 'XX'
 } -- 20 enough for vanilla ?
 
+local toSeconds = function(x)
+    return x - math.floor(x / 60) * 60
+end
+
 -- dIsInSeconds is passed by custom clients if they want to save on maths
 -- dontRegister is passed by custom clients if they need to call Stop/Failed/Delayed manually
 function oCB:SpellStart(s, d, dIsInSeconds, dontRegister)
-	self:Debug(string.format("SpellStart - %s | %s (%s)%s", s, d, dIsInSeconds and "s" or "ms", dontRegister and " | Not Registering" or ""))
+	self:Debug(string.format("SpellStart - %s | %s (%s)%s", s, d, dIsInSeconds and "s" or "ms",
+		dontRegister and " | Not Registering" or ""))
     
 	if s == "" then
 		s = (getglobal("GameTooltipTextLeft1"):GetText() or "")
@@ -34,15 +39,15 @@ function oCB:SpellStart(s, d, dIsInSeconds, dontRegister)
 	self.maxValue = self.startTime + d
 	
 	self.frames.CastingBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
-	self.frames.CastingBar.Bar:SetMinMaxValues(self.startTime, self.maxValue )
+	self.frames.CastingBar.Bar:SetMinMaxValues(toSeconds(self.startTime), toSeconds(self.maxValue) )
 	self.frames.CastingBar.Bar:SetValue(0)
 	
 	self.SpellIcon = BS:GetSpellIcon(s)
 	self.ItemIcon = self:FindItemIcon(s)
 	
-	if self.oCBRank ~= nil and self.db.profile.CastingBar.spellShowRank then
+	if self.oCBRank and self.oCBRank ~= nil and self.db.profile.CastingBar.spellShowRank then
 		if oCB:IsSpell(s, self.oCBRank) then
-			self:Debug("Rank Found: "..s.." "..self.oCBRank)
+			self:Debug("Rank Found: "..s.." "..(self.oCBRank or ""))
 			if self.db.profile.CastingBar.spellRomanRank then
 				local num = tonumber(self.oCBRank)
 				if num and num > 0 then
@@ -107,7 +112,8 @@ function oCB:SpellStart(s, d, dIsInSeconds, dontRegister)
 		elseif self.SpellIcon then
 			self.frames.CastingBar.Texture:SetTexture(self.SpellIcon)
 			self.frames.CastingBar.Icon:Show()
-		elseif string.find(s, "^Recette") or string.find(s, "^Plans :") or string.find(s, "^Patron :") or string.find(s, "^Formule :") then --missing translation
+		elseif string.find(s, "^Recipe :") or string.find(s, "^Plans :") or string.find(s, "^Schematic :") or
+			string.find(s, "^Formula :") then
 			self.frames.CastingBar.Texture:SetTexture("Interface\\AddOns\\oCB\\Icons\\Spell_Arcane_MindMastery")
 			self.frames.CastingBar.Icon:Show()
 			self.frames.CastingBar.Latency:SetText("")
@@ -139,7 +145,7 @@ function oCB:SpellStop(dontUnregister)
 	self:Debug("SpellStop - Stopping cast")		
 	local c = self.db.profile.Colors.Complete
 	
-	self.frames.CastingBar.Bar:SetValue(self.maxValue or 0)
+	self.frames.CastingBar.Bar:SetValue_(toSeconds(self.maxValue or 0))
 	
 	self.frames.CastingBar.Latency:SetText("")
 	self.frames.CastingBar.LagBar:SetValue(0)
@@ -168,7 +174,8 @@ end
 function oCB:SpellFailed(dontUnregister)
 	local c = self.db.profile.Colors.Failed
 
-	self.frames.CastingBar.Bar:SetValue(self.maxValue)
+	self.frames.CastingBar.Bar:SetMinMaxValues(0, 1)
+	self.frames.CastingBar.Bar:SetValue_(1)
 	self.frames.CastingBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
 	self.frames.CastingBar.Spark:Hide()
 	
@@ -184,7 +191,7 @@ function oCB:SpellFailed(dontUnregister)
 	self.casting 		= nil
 	self.channeling 	= nil
 	self.fadeOut	= 1 -- spellfailed
-	self.holdTime = GetTime() + 1
+	self.holdTime = GetTime() + 2
 	
 	self.oCBCastSent = nil
     
@@ -207,13 +214,14 @@ function oCB:SpellDelayed(d)
 		self.maxValue = self.maxValue + d
 		self.delay = self.delay + d
 		
-		self.frames.CastingBar.Bar:SetMinMaxValues(self.startTime, self.maxValue)
+		self.frames.CastingBar.Bar:SetMinMaxValues(toSeconds(self.startTime), toSeconds(self.maxValue))
 	end
 end
 
 function oCB:SpellChannelStart(d)
 	self:Debug("SpellChannelStart - Starting channel")
-	self:Debug("ChannelInfo - "..(self.oCBName or arg2).." - "..(self.oCBRank or "no rank").." - "..(self.oCBIcon or ""))
+	self:Debug("ChannelInfo - " .. (self.oCBName or arg2) .. " - " ..
+		(self.oCBRank or "no rank") .. " - " .. (self.oCBIcon or ""))
 	d = d / 1000
 	local c = self.db.profile.Colors.Channel
 	
@@ -222,8 +230,8 @@ function oCB:SpellChannelStart(d)
 	self.maxValue = self.endTime
 	
 	self.frames.CastingBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
-	self.frames.CastingBar.Bar:SetMinMaxValues(self.startTime, self.endTime)
-	self.frames.CastingBar.Bar:SetValue(self.endTime)
+	self.frames.CastingBar.Bar:SetMinMaxValues(toSeconds(self.startTime), toSeconds(self.endTime))
+	self.frames.CastingBar.Bar:SetValue_(toSeconds(self.endTime))
 	
 	if self.oCBRank ~= nil and self.db.profile.CastingBar.spellShowRank then
 		if oCB:IsSpell(self.oCBName, self.oCBRank) then
@@ -235,7 +243,8 @@ function oCB:SpellChannelStart(d)
 				end
 			end
 			if not self.db.profile.CastingBar.spellShortRank then
-				self.frames.CastingBar.Spell:SetText(self.oCBName.." "..string.format(string.gsub(RANK_COLON, ":", "%%s"), self.oCBRank))
+				self.frames.CastingBar.Spell:SetText(self.oCBName ..
+					" " .. string.format(string.gsub(RANK_COLON, ":", "%%s"), self.oCBRank))
 			else
 				self.frames.CastingBar.Spell:SetText(self.oCBName.." "..self.oCBRank)
 			end
@@ -272,7 +281,7 @@ function oCB:SpellChannelStop()
 	if not self.channeling then return end
 	local c = self.db.profile.Colors.Complete
 	
-	self.frames.CastingBar.Bar:SetValue(self.endTime)
+	self.frames.CastingBar.Bar:SetValue(toSeconds(self.endTime))
 	self.frames.CastingBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
 	self.frames.CastingBar.Spark:Hide()
 	
@@ -300,7 +309,7 @@ function oCB:SpellChannelUpdate(d)
 		self.maxValue = self.endTime
 		self.startTime = self.endTime - origDuration
 		
-		self.frames.CastingBar.Bar:SetMinMaxValues(self.startTime, self.endTime)
+		self.frames.CastingBar.Bar:SetMinMaxValues(toSeconds(self.startTime), toSeconds(self.endTime))
 	end
 end
 
@@ -327,7 +336,7 @@ function oCB:OnCasting()
 			oCB.frames.CastingBar.LagBar:SetValue(0)
 		end
 		
-		oCB.frames.CastingBar.Bar:SetValue(n)
+		oCB.frames.CastingBar.Bar:SetValue(toSeconds(n))
 		
 		local w = oCB.frames.CastingBar.Bar:GetWidth()
 		sp = ((n - oCB.startTime) / (oCB.maxValue - oCB.startTime)) * w
@@ -355,7 +364,8 @@ function oCB:OnCasting()
 			oCB.frames.CastingBar.Delay:SetText("")
 		end
 		
-		oCB.frames.CastingBar.Bar:SetValue(b)
+		oCB.frames.CastingBar.Bar:SetValue(toSeconds(b))
+		
 		
 		local w = oCB.frames.CastingBar.Bar:GetWidth()
 		sp = ((b - oCB.startTime) / (oCB.endTime - oCB.startTime)) * w

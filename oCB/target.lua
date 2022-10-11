@@ -699,11 +699,15 @@ local Patterns = {
   ["SPELL_GAINS"] = string.gsub(string.gsub(AURAADDEDOTHERHELPFUL,"%d%$",""), "%%s", "(.+)"),
   ["SPELL_AFFLICTED"] = string.gsub(string.gsub(AURAADDEDOTHERHARMFUL,"%d%$",""), "%%s", "(.+)"),
   ["SPELL_AFFLICTED_SELF"] = string.gsub(string.gsub(AURAADDEDSELFHARMFUL,"%d%$",""), "%%s", "(.+)"),
-  ["SPELL_SUFFER_SELF"] = string.gsub(string.gsub(string.gsub(PERIODICAURADAMAGEOTHERSELF,"%.","%%..*"),"%%d","%%d+"),"%%s","(.+)"),
+  ["SPELL_SUFFER_SELF"] = string.gsub(string.gsub(string.gsub(PERIODICAURADAMAGEOTHERSELF, "%.", "%%..*"), "%%d", "%%d+")
+    , "%%s", "(.+)"),
   ["SPELL_HIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGSELFOTHER,"%.","%%..*"),"%%d","%%d+"),"%%s","(.+)"),
-  ["SPELL_CRIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGCRITSELFOTHER,"%.","%%..*"),"%%d","%%d+"),"%%s","(.+)"),
-  ["OTHER_SPELL_HIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGOTHEROTHER,"%.","%%..*"), "%%s", "(.+)"), "%%d", "%%d+"),
-  ["OTHER_SPELL_CRIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGCRITOTHEROTHER,"%.","%%..*"), "%%s", "(.+)"), "%%d", "%%d+"),
+  ["SPELL_CRIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGCRITSELFOTHER, "%.", "%%..*"), "%%d", "%%d+"), "%%s",
+    "(.+)"),
+  ["OTHER_SPELL_HIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGOTHEROTHER, "%.", "%%..*"), "%%s", "(.+)"), "%%d",
+    "%%d+"),
+  ["OTHER_SPELL_CRIT"] = string.gsub(string.gsub(string.gsub(SPELLLOGCRITOTHEROTHER, "%.", "%%..*"), "%%s", "(.+)"),
+    "%%d", "%%d+"),
   ["SPELL_INTERRUPT"] = string.gsub(string.gsub(SPELLINTERRUPTSELFOTHER, "%d%$",""),"%%s","(.+)"),
   ["OTHER_SPELL_INTERRUPT"] = string.gsub(string.gsub(SPELLINTERRUPTOTHEROTHER,"%d%$",""),"%%s", "(.+)"),
 }
@@ -747,7 +751,10 @@ function oCB:OnTargetCasting()
         local w = oCB.frames.TargetBar:GetWidth()
         local sp = (val/casttime) * w
         if (sp < 0) then sp = 0 end
-        if (sp > w) then sp = w oCB.frames.TargetBar.Time:Hide() oCB.frames.TargetBar.Spark:Hide() end
+        if (sp > w) then sp = w
+          oCB.frames.TargetBar.Time:Hide()
+          oCB.frames.TargetBar.Spark:Hide()
+        end
         oCB.frames.TargetBar.Bar:SetMinMaxValues(0, casttime)
         oCB.frames.TargetBar.Bar:SetValue(val)
         oCB.frames.TargetBar.Spell:SetText(spellname)
@@ -772,6 +779,7 @@ function oCB:OnTargetCasting()
     else
       oCB.targetFadeOut = nil  -- OnUpdate
       oCB.frames.TargetBar:Hide()
+      oCB.frames.TargetBar.Bar:SetValue(0)
       oCB.frames.TargetBar.Time:SetText("")
       oCB.frames.TargetBar:SetAlpha(1)
     end

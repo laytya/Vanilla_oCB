@@ -1,86 +1,86 @@
 local Default				= {
 	CastingBar			= {
 		width 			= 320,
-		height			= 31,
+		height			= 19,
 		hideLagBar		= false,
 		hideIcon		= false,
-		edgeFile		= "None",
-		texture			= "Striped",
-		timeSize		= 19,
-		timeFont		= "Visitor1",
-		timeFontMonochrome = true,
-		timeFontShadow = true,
+		edgeFile		= "Tooltip",
+		texture			= "Minimalist",
+		timeSize		= 14,
+		timeFont		= "Arial Narrow",
+		timeFontMonochrome = false,
+		timeFontShadow = false,
 		timeFontShadowOffsetX = 1,
 		timeFontShadowOffsetY = -1,
-		timeOutline	= "None",
-		spellSize		= 13,
-		spellFont		= "Visitor2",
-		spellFontMonochrome = true,
-		spellFontShadow = true,
+		timeOutline	= "Normal",
+		spellSize		= 14,
+		spellFont		= "Arial Narrow",
+		spellFontMonochrome = false,
+		spellFontShadow = false,
 		spellFontShadowOffsetX = 1,
 		spellFontShadowOffsetY = -1,
-		spellShowRank = true,
+		spellShowRank = false,
 		spellShortRank = false,
 		spellRomanRank = false,
-		spellOutline	= "None",
+		spellOutline	= "Normal",
 		delayOffset		= 34,
-		delaySize		= 19,
-		delayFont		= "Visitor1",
-		delayFontMonochrome = true,
-		delayFontShadow = true,
+		delaySize		= 14,
+		delayFont		= "Arial Narrow",
+		delayFontMonochrome = false,
+		delayFontShadow = false,
 		delayFontShadowOffsetX = 1,
 		delayFontShadowOffsetY = -1,
-		delayOutline	= "None",
-		latencySize		= 13,
-		latencyFont		= "Visitor2",
-		latencyFontMonochrome = true,
-		latencyFontShadow = true,
+		delayOutline	= "Normal",
+		latencySize		= 12,
+		latencyFont		= "Arial Narrow",
+		latencyFontMonochrome = false,
+		latencyFontShadow = false,
 		latencyFontShadowOffsetX = 1,
 		latencyFontShadowOffsetY = -1,
-		latencyOutline	= "None",
+		latencyOutline	= "Normal",
 	},
 	TargetBar			= {
 		width 			= 320,
-		height			= 31,
+		height			= 19,
 		hideIcon		= false,
-		edgeFile		= "None",
+		edgeFile		= "Tooltip",
 		edgeFileStun= "Shielded",
-		texture			= "Striped",
-		timeSize		= 19,
-		timeFont		= "Visitor1",
-		timeFontMonochrome = true,
-		timeFontShadow = true,
+		texture			= "Minimalist",
+		timeSize		= 14,
+		timeFont		= "Arial Narrow",
+		timeFontMonochrome = false,
+		timeFontShadow = false,
 		timeFontShadowOffsetX = 1,
 		timeFontShadowOffsetY = -1,
-		timeOutline	= "None",
-		spellSize		= 13,
-		spellFont		= "Visitor2",
-		spellFontMonochrome = true,
-		spellFontShadow = true,
+		timeOutline	= "Normal",
+		spellSize		= 14,
+		spellFont		= "Arial Narrow",
+		spellFontMonochrome = false,
+		spellFontShadow = false,
 		spellFontShadowOffsetX = 1,
 		spellFontShadowOffsetY = -1,
-		spellOutline	= "None",
+		spellOutline	= "Normal",
 	},	
 	MirrorBar			= {
 		width 			= 320,
-		height			= 24,
-		edgeFile		= "None",
-		texture			= "Striped",
-		timeSize		= 19,
-		timeFont		= "Visitor1",
+		height			= 14,
+		edgeFile		= "Tooltip",
+		texture			= "Minimalist",
+		timeSize		= 12,
+		timeFont		= "Arial Narrow",
 		hideIcon		= false,
-		timeFontMonochrome = true,
-		timeFontShadow = true,
+		timeFontMonochrome = false,
+		timeFontShadow = false,
 		timeFontShadowOffsetX = 1,
 		timeFontShadowOffsetY = -1,
 		timeOutline	= "None",
-		spellSize		= 13,
-		spellFont		= "Visitor2",
-		spellFontMonochrome = true,
-		spellFontShadow = true,
+		spellSize		= 12,
+		spellFont		= "Arial Narrow",
+		spellFontMonochrome = false,
+		spellFontShadow = false,
 		spellFontShadowOffsetX = 1,
 		spellFontShadowOffsetY = -1,
-		spellOutline	= "None",
+		spellOutline	= "Normal",
 	},
 	Colors						= {
 		Complete				= {r=.8431372549019608, g=.8352941176470589, b=.8901960784313725},
@@ -169,6 +169,7 @@ local Textures		= {
 local Borders 		= {
 	["Default"] 		= "Interface\\AddOns\\oCB\\border\\roth",
 	["Shielded"]		= "Interface\\AddOns\\oCB\\border\\shielded",
+	["Tooltip"]			= "Interface\\Tooltips\\UI-Tooltip-Border",
 	["None"] 		= ""
 }
 local Outlines 		= {
@@ -278,7 +279,7 @@ function oCB:OnInitialize()
 							self.db.profile.CastingBar.edgeFile = v
 							self:Layout("CastingBar")
 						end,
-						validate = {"Default","None"}
+						validate = {"Default","Tooltip","Shielded","None"}
 					},
 					width = {
 						name = "Width", type = 'range', min = 10, max = 500, step = 1, order = 1,
@@ -684,7 +685,7 @@ function oCB:OnInitialize()
 							self.db.profile.TargetBar.edgeFile = v
 							self:Layout("TargetBar", "TargetBar")
 						end,
-						validate = {"Default","None"}
+						validate = {"Default","Tooltip","Shielded","None"}
 					},
 					stunborder = {
 						name = "Mechanic Indicator", type = 'text', order = 4,
@@ -900,7 +901,7 @@ function oCB:OnInitialize()
 							self:Layout("EXHAUSTION", "MirrorBar")
 							self:Layout("FEIGNDEATH", "MirrorBar")
 						end,
-						validate = {"Default","None"}
+						validate = {"Default","Tooltip","Shielded","None"}
 					},
 					texture = {
 						name = "Texture", type = 'text', order = 4,
@@ -1324,7 +1325,7 @@ function oCB:GetSpellRank(slot)
 	if rank then
 		return rank, name
 	else
-		return nil, name
+		return false, name
 	end
 end
 

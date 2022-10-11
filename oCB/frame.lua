@@ -86,7 +86,8 @@ function oCB:Layout(b, s)
 	self.frames[b].Spark:SetBlendMode("ADD")
 	
 	self.frames[b].Time:SetJustifyH("RIGHT")
-	self.frames[b].Time:SetFont(self.Fonts[db.timeFont],db.timeSize, (self.Outlines[db.timeOutline])..(db.timeFontMonochrome and "MONOCHROME" or ""))
+	self.frames[b].Time:SetFont(self.Fonts[db.timeFont], db.timeSize,
+		(self.Outlines[db.timeOutline]) .. (db.timeFontMonochrome and "MONOCHROME" or ""))
 	self.frames[b].Time:SetShadowColor( 0, 0, 0, 0)
 	if db.timeFontShadow then
 		self.frames[b].Time:SetShadowColor( 0, 0, 0, 1)
@@ -98,7 +99,8 @@ function oCB:Layout(b, s)
 	
 	self.frames[b].Spell:SetJustifyH("LEFT")
 	self.frames[b].Spell:SetWidth(db.width-self.frames[b].Time:GetWidth())
-	self.frames[b].Spell:SetFont(self.Fonts[db.spellFont], db.spellSize, (self.Outlines[db.spellOutline])..(db.spellFontMonochrome and "MONOCHROME" or ""))
+	self.frames[b].Spell:SetFont(self.Fonts[db.spellFont], db.spellSize,
+		(self.Outlines[db.spellOutline]) .. (db.spellFontMonochrome and "MONOCHROME" or ""))
 	self.frames[b].Spell:SetShadowColor( 0, 0, 0, 0)
 	if db.spellFontShadow then
 		self.frames[b].Spell:SetShadowColor( 0, 0, 0, 1)
@@ -123,7 +125,8 @@ function oCB:Layout(b, s)
 	
 		self.frames[b].Delay:SetTextColor(1,0,0,1)
 		self.frames[b].Delay:SetJustifyH("RIGHT")
-		self.frames[b].Delay:SetFont(self.Fonts[db.delayFont], db.delaySize, (self.Outlines[db.delayOutline])..(db.delayFontMonochrome and "MONOCHROME" or ""))
+		self.frames[b].Delay:SetFont(self.Fonts[db.delayFont], db.delaySize,
+			(self.Outlines[db.delayOutline]) .. (db.delayFontMonochrome and "MONOCHROME" or ""))
 		self.frames[b].Delay:SetShadowColor( 0, 0, 0, 0)
 		if db.delayFontShadow then
 			self.frames[b].Delay:SetShadowColor( 0, 0, 0, 1)
@@ -135,7 +138,8 @@ function oCB:Layout(b, s)
 		
 		self.frames[b].Latency:SetTextColor(0.36,0.36,0.36,1)
 		self.frames[b].Latency:SetJustifyH("RIGHT")
-		self.frames[b].Latency:SetFont(self.Fonts[db.latencyFont], db.latencySize, (self.Outlines[db.latencyOutline])..(db.latencyFontMonochrome and "MONOCHROME" or ""))
+		self.frames[b].Latency:SetFont(self.Fonts[db.latencyFont], db.latencySize,
+			(self.Outlines[db.latencyOutline]) .. (db.latencyFontMonochrome and "MONOCHROME" or ""))
 		self.frames[b].Latency:SetShadowColor( 0, 0, 0, 0)
 		if db.latencyFontShadow then
 			self.frames[b].Latency:SetShadowColor( 0, 0, 0, 1)
