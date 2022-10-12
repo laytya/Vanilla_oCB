@@ -18,7 +18,4 @@ A player castbar replacement as well as a target castbar.
 ### Third-party addons
 - [FuBar_ToFu](https://github.com/Road-block/FuBar_ToFu/releases/latest) can plug into oCB to show flight timers it records.
 
-## Download
-- [Release](https://github.com/Road-block/Vanilla_oCB/releases/latest) (Get the oCB-x.yy-11200.zip file and extract to addons)
-- [*Alpha*](https://github.com/Road-block/Vanilla_oCB/archive/master.zip) *(open the archive and drag the oCB folder to addons)*
 
