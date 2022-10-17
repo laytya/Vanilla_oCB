@@ -9,7 +9,7 @@ local roman = {
 } -- 20 enough for vanilla ?
 
 local toSeconds = function(x)
-    return x - math.floor(x / 60) * 60
+	return x - math.floor(x / 3600) * 3600
 end
 
 -- dIsInSeconds is passed by custom clients if they want to save on maths
@@ -73,10 +73,9 @@ function oCB:SpellStart(s, d, dIsInSeconds, dontRegister)
 	self.frames.CastingBar.Time:SetText("")
 	self.frames.CastingBar.Delay:SetText("")
 	
-	if self.oCBCastSent ~= nil then
-		local mylatency = math.floor((GetTime()-self.oCBCastSent)*1000)
+	local mylatency = math.floor((GetTime() - (self.oCBCastSent or 0)) * 1000)
+	if self.oCBCastSent ~= nil and mylatency < 1000 then
 		local w = math.floor(self.frames.CastingBar.Bar:GetWidth())
-		mylatency = mylatency
 		self.frames.CastingBar.Latency:SetText(mylatency.."ms")
 		self.frames.CastingBar.LagBar:SetStatusBarColor(1, 0, 0, 0.5)
 		self.frames.CastingBar.LagBar:SetMinMaxValues(0, 100)
@@ -145,7 +144,7 @@ function oCB:SpellStop(dontUnregister)
 	self:Debug("SpellStop - Stopping cast")		
 	local c = self.db.profile.Colors.Complete
 	
-	self.frames.CastingBar.Bar:SetValue_(toSeconds(self.maxValue or 0))
+	self.frames.CastingBar.Bar:SetValue(toSeconds(self.maxValue or 0))
 	
 	self.frames.CastingBar.Latency:SetText("")
 	self.frames.CastingBar.LagBar:SetValue(0)
@@ -175,7 +174,7 @@ function oCB:SpellFailed(dontUnregister)
 	local c = self.db.profile.Colors.Failed
 
 	self.frames.CastingBar.Bar:SetMinMaxValues(0, 1)
-	self.frames.CastingBar.Bar:SetValue_(1)
+	self.frames.CastingBar.Bar:SetValue(1)
 	self.frames.CastingBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
 	self.frames.CastingBar.Spark:Hide()
 	
@@ -218,6 +217,32 @@ function oCB:SpellDelayed(d)
 	end
 end
 
+local Patterns = {
+	["SPELL_GAINED_SELF"] = string.gsub(string.gsub(AURAADDEDSELFHELPFUL, "%d%$", ""), "%%s", "(.+)"),
+}
+
+function oCB:PlayerCombatLog()
+	
+	self:Debug("PlayerCombatLog " .. arg1)
+	if arg1 then
+		-- "You gain %s."
+		for spell in string.gfind(arg1, Patterns.SPELL_GAINED_SELF) do
+			if BS:HasTranslation(spell) then
+				self.oCBName = BS[spell]
+				self.oCBIcon = BS:GetSpellIcon(spell)
+				if self.channeling then
+					self.frames.CastingBar.Spell:SetText(self.oCBName)
+					if self.oCBIcon ~= nil and not self.db.profile.CastingBar.hideIcon then
+						self.frames.CastingBar.Texture:SetTexture(self.oCBIcon)
+						self.frames.CastingBar.Icon:Show()
+					end
+				end
+			end
+			return
+		end
+	end
+end
+
 function oCB:SpellChannelStart(d)
 	self:Debug("SpellChannelStart - Starting channel")
 	self:Debug("ChannelInfo - " .. (self.oCBName or arg2) .. " - " ..
@@ -231,7 +256,7 @@ function oCB:SpellChannelStart(d)
 	
 	self.frames.CastingBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
 	self.frames.CastingBar.Bar:SetMinMaxValues(toSeconds(self.startTime), toSeconds(self.endTime))
-	self.frames.CastingBar.Bar:SetValue_(toSeconds(self.endTime))
+	self.frames.CastingBar.Bar:SetValue(toSeconds(self.endTime))
 	
 	if self.oCBRank ~= nil and self.db.profile.CastingBar.spellShowRank then
 		if oCB:IsSpell(self.oCBName, self.oCBRank) then

@@ -1227,6 +1227,7 @@ function oCB:Events()
 	self:RegisterEvent("SPELLCAST_CHANNEL_START", "SpellChannelStart")
 	self:RegisterEvent("SPELLCAST_CHANNEL_STOP", "SpellChannelStop")
 	self:RegisterEvent("SPELLCAST_CHANNEL_UPDATE", "SpellChannelUpdate")
+	self:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS", "PlayerCombatLog")
 	
 	self:RegisterEvent("MIRROR_TIMER_START")
 	self:RegisterEvent("MIRROR_TIMER_PAUSE")

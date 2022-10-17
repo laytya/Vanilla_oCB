@@ -948,7 +948,7 @@ function oCB:TargetCastStart(target,spell)
     self.frames.TargetBar:SetAlpha(1)
     self.frames.TargetBar:Show()
     if not self.db.profile.TargetBar.hideIcon then
-      self.frames.TargetBar.Texture:SetTexture(icon)
+      self.frames.TargetBar.Texture:SetTexture("Interface\\Icons\\" .. (icon or ""))
       self.frames.TargetBar.Icon:Show()
     end      
   end  
