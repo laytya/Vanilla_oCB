@@ -206,6 +206,7 @@ oCB = AceLibrary("AceAddon-2.0"):new("AceEvent-2.0", "AceDebug-2.0", "AceHook-2.
 local BS = AceLibrary("Babble-Spell-2.2")
 local waterfall 		= AceLibrary("Waterfall-1.0")
 local _, PlayerClass = UnitClass("player")
+oCB.superwow = SUPERWOW_VERSION and (tonumber(SUPERWOW_VERSION) > 1.4) or false
 
 function oCB:ShowTest()
 	self.oCBCastSent = GetTime()-0.666
@@ -1233,6 +1234,9 @@ function oCB:Events()
 	self:RegisterEvent("MIRROR_TIMER_PAUSE")
 	self:RegisterEvent("MIRROR_TIMER_STOP")
 
+	if oCB.superwow then
+		self:RegisterEvent("UNIT_CASTEVENT", "TargetCast")
+	else
   self:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE", "TargetCombatlog")
   self:RegisterEvent("CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE", "TargetCombatlog")
   self:RegisterEvent("CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF", "TargetCombatlog")
@@ -1252,6 +1256,7 @@ function oCB:Events()
   self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_DAMAGE", "TargetCombatlog")
   self:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_CREATURE_BUFF", "TargetCombatlog")
   self:RegisterEvent("PLAYER_TARGET_CHANGED", "TargetChanged")	
+	end
 	
 	UIParent:UnregisterEvent("MIRROR_TIMER_START")
 end

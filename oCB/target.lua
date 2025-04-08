@@ -621,7 +621,6 @@ local PlayerSpells = {
   ['Summon Imp'] = {t=10000, ico="Spell_Shadow_SummonImp", m="silence"};
   ['Summon Succubus'] = {t=10000, ico="Spell_Shadow_SummonSuccubus", m="silence"};
   ['Summon Voidwalker'] = {t=10000, ico="Spell_Shadow_SummonVoidWalker", m="silence"};
-  ['Summon Voidwalker'] = {t=10000, ico="Spell_Shadow_SummonVoidWalker", m="silence"};
   ['Teleport: Darnassus'] = {t=10000, ico="Spell_Arcane_TeleportDarnassus", m="silence"};
   ['Teleport: Ironforge'] = {t=10000, ico="Spell_Arcane_TeleportIronForge", m="silence"};
   ['Teleport: Moonglade'] = {t=10000, ico="Spell_Arcane_TeleportMoonglade", m="silence"};
@@ -711,14 +710,19 @@ local Patterns = {
   ["SPELL_INTERRUPT"] = string.gsub(string.gsub(SPELLINTERRUPTSELFOTHER, "%d%$",""),"%%s","(.+)"),
   ["OTHER_SPELL_INTERRUPT"] = string.gsub(string.gsub(SPELLINTERRUPTOTHEROTHER,"%d%$",""),"%%s", "(.+)"),
 }
-
+local elapsed = 1/30
 function oCB:OnTargetCasting()
-  elapsed = elapsed + arg1
+  elapsed = elapsed - arg1
+  if elapsed > 0 then return end
+  elapsed = 1/30
   local now = GetTime()
   local test = not oCB.db.profile.lock
-  local uname = UnitExists("target") and UnitName("target") or false
+
   local db = oCB.db.profile.TargetBar
-  if (uname and Casters[uname]) or test then
+  local exist, guid = UnitExists("target") 
+  if exist or test then
+    local uname = guid and guid or UnitName("target")
+    if Casters[uname] or test then
     local spellname,starttime,casttime,mechanic
     if (test) then
       spellname = "Drag me (target)"
@@ -772,6 +776,9 @@ function oCB:OnTargetCasting()
   else
     oCB.targetFadeOut = 1
   end
+  else
+    oCB.targetFadeOut = 1
+  end
   if (oCB.targetFadeOut) then
     local a = this:GetAlpha() - .05
     if (a > 0) then
@@ -787,8 +794,10 @@ function oCB:OnTargetCasting()
 end
 
 function oCB:TargetChanged()
-  local uname = UnitExists("target") and UnitName("target") or false
-  if uname and Casters[uname] then
+  local exist, guid = UnitExists("target") 
+  if exist then 
+    local uname = guid and guid or UnitName("target")
+    if Casters[uname] then
     local starttime = Casters[uname].starttime or 0
     local casttime = Casters[uname].casttime or 0
     if starttime + casttime > GetTime() then
@@ -796,6 +805,34 @@ function oCB:TargetChanged()
       self.frames.TargetBar:Show()
     end  
   end
+end
+end
+
+function oCB:TargetCast()
+	local caster, target, eventType, spellId, start, duration = arg1, arg2, arg3, arg4, GetTime(), arg5 / 1000
+	if eventType == "MAINHAND" or eventType == "OFFHAND" then return end
+	local exist , targetGuid = UnitExists("target")
+  if exist and targetGuid == caster then
+		if eventType == "START" or eventType == "CHANNEL" then
+			self:TargetCastStart(caster, spellId, start, duration, eventType == "CHANNEL")
+      -- local spell, rank, icon = SpellInfo(spellId)
+			--[[frame.castbar.spellInfo = {
+				target = target, 
+				spellId = spellId,
+				spell = spell, 
+				rank = rank, 
+				icon = icon, 
+				inverse = eventType == "CHANNEL",
+				timeStart = start, 
+				timeEnd = start + duration
+			}]]
+			
+		elseif (eventType == "FAIL") then
+			self:TargetCastStop(caster, "Counterspell")
+		elseif (eventType == "CAST" ) then
+			self:TargetCastStop(caster, spellId)
+		end
+	end
 end
 
 function oCB:TargetCombatlog(msg)
@@ -906,13 +943,19 @@ function oCB:TargetChannelCastStart(target,spell)
   end  
 end
 
-function oCB:TargetCastStart(target,spell)
+function oCB:TargetCastStart(target, spell, start, duration, channeling)
+  
   local uname = UnitExists("target") and UnitName("target") or false
   local casttime, icon, mechanic
   local test = not self.db.profile.lock
-  local c = self.db.profile.Colors.TargetCasting
+  local c = channeling and self.db.profile.Colors.TargetChannel or self.db.profile.Colors.TargetCasting
   local now = GetTime()
   self.targetFadeOut = nil -- caststart
+  
+  if oCB.superwow then
+    local spellname, rank, icon = SpellInfo(spell)
+    Casters[target] = {cast = spellname, starttime = now, casttime = duration, icon = icon, mechanic = mechanic, spellId = spell}
+  else
   if (uname) and not (test) then
     local isPlayer = UnitIsPlayer("target")
     if Targets[uname] ~= nil then 
@@ -943,7 +986,8 @@ function oCB:TargetCastStart(target,spell)
     icon = Spells[spell].ico
     Casters[target] = {cast = spell, starttime = now, casttime = casttime, icon = icon, mechanic = "silence"}
   end
-  if Casters[uname] or (test) then 
+  end
+  if Casters[target] or (test) then 
     self.frames.TargetBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
     self.frames.TargetBar:SetAlpha(1)
     self.frames.TargetBar:Show()
