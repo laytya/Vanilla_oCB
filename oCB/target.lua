@@ -48,6 +48,7 @@ local Interrupts = {
   ["M73 Frag Grenade"] = true;
   ["Thorium Grenade"] = true;
   ["Goblin Mortar"] = true;
+  ["Polymorph"] = true;
 }
 local Targets = {
   ["Ambershard Destroyer"] = {p="Boulder", t=3000, ico="Ability_Throw", m="pacify"};
@@ -780,11 +781,15 @@ function oCB:OnTargetCasting()
     oCB.targetFadeOut = 1
   end
   if (oCB.targetFadeOut) then
-    local a = this:GetAlpha() - .05
+    local a = this:GetAlpha() - .03
     if (a > 0) then
       oCB.frames.TargetBar:SetAlpha(a)
+      if oCB.targetInterupted > 0 then
+        oCB.frames.TargetBar.Spell:SetText(oCB.targetInterupted == 1 and "INTERUPTED" or "FAILED")
+      end
     else
       oCB.targetFadeOut = nil  -- OnUpdate
+      oCB.targetInterupted = 0
       oCB.frames.TargetBar:Hide()
       oCB.frames.TargetBar.Bar:SetValue(0)
       oCB.frames.TargetBar.Time:SetText("")
@@ -812,7 +817,8 @@ function oCB:TargetCast()
 	local caster, target, eventType, spellId, start, duration = arg1, arg2, arg3, arg4, GetTime(), arg5 / 1000
 	if eventType == "MAINHAND" or eventType == "OFFHAND" then return end
 	local exist , targetGuid = UnitExists("target")
-  if exist and targetGuid == caster then
+  if exist then
+    if targetGuid == caster then
 		if eventType == "START" or eventType == "CHANNEL" then
 			self:TargetCastStart(caster, spellId, start, duration, eventType == "CHANNEL")
       -- local spell, rank, icon = SpellInfo(spellId)
@@ -828,10 +834,15 @@ function oCB:TargetCast()
 			}]]
 			
 		elseif (eventType == "FAIL") then
-			self:TargetCastStop(caster, "Counterspell")
+        self:TargetCastStop(caster, "fail")
 		elseif (eventType == "CAST" ) then
 			self:TargetCastStop(caster, spellId)
 		end
+    elseif targetGuid == target then
+      if (eventType == "CAST" ) then
+        self:TargetCastStop(target, spellId)
+      end
+    end
 	end
 end
 
@@ -906,7 +917,8 @@ function oCB:TargetChannelCastStart(target,spell)
   local test = not self.db.profile.lock
   local c = self.db.profile.Colors.TargetChannel
   local now = GetTime()
-  self.targetFadeOut = nil -- caststart
+  oCB.targetFadeOut = nil -- caststart
+  oCB.targetInterupted = 0
   if (uname) and not (test) then
     local isPlayer = UnitIsPlayer("target")
     if TargetChannel[uname] ~= nil then 
@@ -950,7 +962,8 @@ function oCB:TargetCastStart(target, spell, start, duration, channeling)
   local test = not self.db.profile.lock
   local c = channeling and self.db.profile.Colors.TargetChannel or self.db.profile.Colors.TargetCasting
   local now = GetTime()
-  self.targetFadeOut = nil -- caststart
+  oCB.targetFadeOut = nil -- caststart
+  oCB.targetInterupted = 0
   
   if oCB.superwow then
     local spellname, rank, icon = SpellInfo(spell)
@@ -999,10 +1012,12 @@ function oCB:TargetCastStart(target, spell, start, duration, channeling)
 end
 
 function oCB:TargetCastStop(target,spell)
-  if Casters[target] and Interrupts[spell] ~= nil then
-    local c = self.db.profile.Colors.TargetStopped
+  if type(spell) =="number" then spell = SpellInfo(spell) end
+  if Casters[target] and (Interrupts[spell] ~= nil or spell == "fail") then
+    local c = spell ~= "fail" and self.db.profile.Colors.TargetStopped or self.db.profile.Colors.TargetComplete
     self.frames.TargetBar.Bar:SetStatusBarColor(c.r, c.g, c.b)
     self.targetFadeOut = 1    
+    oCB.targetInterupted = spell ~= "fail" and 1 or 2
     Casters[target] = nil
   end  
 end
